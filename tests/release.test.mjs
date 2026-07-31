@@ -51,7 +51,7 @@ test("the promised two-person journey has server routes", async () => {
     "app/manifest.webmanifest/route.ts",
     "app/robots.txt/route.ts",
     "app/sitemap.xml/route.ts",
-    "app/favicon.ico/route.ts",
+    "app/favicon.svg/route.ts",
   ];
   await Promise.all(paths.map((path) => stat(new URL(path, root))));
 });
@@ -90,13 +90,13 @@ test("metadata endpoints are explicit Vinext routes, not build-time conventions"
   const manifest = await text("app/manifest.webmanifest/route.ts");
   const robots = await text("app/robots.txt/route.ts");
   const sitemap = await text("app/sitemap.xml/route.ts");
-  const favicon = await text("app/favicon.ico/route.ts");
+  const favicon = await text("app/favicon.svg/route.ts");
   assert.match(manifest, /application\/manifest\+json/);
   assert.match(robots, /Sitemap: \$\{base\}\/sitemap\.xml/);
   assert.match(sitemap, /application\/xml/);
   assert.match(sitemap, /listVideos\(\{ sort: "newest", limit: 100 \}\)/);
-  assert.match(favicon, /Response\.redirect/);
-  await stat(new URL("public/favicon.svg", root));
+  assert.match(favicon, /image\/svg\+xml/);
+  assert.match(favicon, /aria-label="Pumblo"/);
 });
 
 test("the social preview is exactly 1200 by 630", async () => {

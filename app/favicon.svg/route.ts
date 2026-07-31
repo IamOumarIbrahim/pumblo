@@ -1,0 +1,10 @@
+const icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pumblo"><rect width="64" height="64" rx="16" fill="#080908"/><path d="M18 13h18c11 0 18 6 18 16s-7 16-18 16h-7v8H18V13Zm11 10v12h7c4 0 7-2 7-6s-3-6-7-6h-7Z" fill="#c7ff2f"/></svg>`;
+
+export function GET() {
+  return new Response(icon, {
+    headers: {
+      "Cache-Control": "public, max-age=86400",
+      "Content-Type": "image/svg+xml; charset=utf-8",
+    },
+  });
+}
