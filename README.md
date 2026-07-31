@@ -12,7 +12,7 @@
 
 Live now: https://www.pumblo.ai — free to watch, free to join, open-source and self-hostable.
 
-![Pumblo Discovery feed preview](docs/images/pumblo_hero.jpg)
+![Pumblo Discovery Feed Preview](docs/images/pumblo_hero.png)
 *The Discovery feed — ranked by the Synthesis Quality Score, not by who bought the most bots.*
 
 Pumblo gives AI-generated film, animation, music video, and explainer content the same home YouTube gave camera footage twenty years ago — except every creator is a real, verified person, and every upload says exactly how it was made. Land on Pumblo to watch something great, laugh, learn something, or fall down a feed that was never optimized to waste your time.
