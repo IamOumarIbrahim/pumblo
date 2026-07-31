@@ -10,20 +10,22 @@
 ![Built with Next.js](https://img.shields.io/badge/built%20with-Next.js-000000?logo=next.js)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-orange)
 
-🔴 **Live now → [pumblo.ai](https://www.pumblo.ai)** — free to watch, free to join, open-source and self-hostable.
+Live now: https://www.pumblo.ai — free to watch, free to join, open-source and self-hostable.
 
 ![Pumblo Discovery feed preview](docs/images/pumblo_hero.jpg)
 *The Discovery feed — ranked by the Synthesis Quality Score, not by who bought the most bots.*
 
 Pumblo gives AI-generated film, animation, music video, and explainer content the same home YouTube gave camera footage twenty years ago — except every creator is a real, verified person, and every upload says exactly how it was made. Land on Pumblo to watch something great, laugh, learn something, or fall down a feed that was never optimized to waste your time.
 
-- 🎬 **Watch** — no account needed, exactly like YouTube
-- 🧑‍🎨 **Upload** — from your browser, an API call, or a one-line shell command
-- 🔐 **Trust** — every account is a real person, every video is provably AI
+- Watch — no account needed, exactly like YouTube
+- Upload — from your browser, an API call, or a one-line shell command
+- Trust — every account is a real person, every video is provably AI
 
 ---
 
 ## Table of Contents
+- [About](#about)
+- [Tags and Keywords](#tags-and-keywords)
 - [Why Pumblo Exists](#why-pumblo-exists)
 - [Who Pumblo Is For](#who-pumblo-is-for)
 - [What Pumblo Is (and Isn't)](#what-pumblo-is-and-isnt)
@@ -41,10 +43,31 @@ Pumblo gives AI-generated film, animation, music video, and explainer content th
 - [API and CLI Reference](#api-and-cli-reference)
 - [Environment Variables](#environment-variables)
 - [Repository Structure](#repository-structure)
-- [Roadmap](#roadmap)
+- [Deployment](#deployment)
+- [GitHub Releases](#github-releases)
 - [Contributing](#contributing)
-- [Code of Conduct and Security Policy](#code-of-conduct-and-security-policy)
+- [Code of Conduct](#code-of-conduct)
+- [Security Policy](#security-policy)
 - [License](#license)
+
+---
+
+## About
+
+Pumblo is an open-source, human-accountable video platform designed specifically for AI-generated video. Built on Next.js, Node.js, C2PA Content Credentials, and PostgreSQL, Pumblo guarantees that every published video is provably AI-generated and every registered account belongs to a unique, verified human.
+
+## Tags and Keywords
+
+- ai-video
+- c2pa
+- provenance
+- proof-of-humanity
+- nextjs
+- typescript
+- synthesis-quality-score
+- agplv3
+- youtube-alternative
+- open-source
 
 ---
 
@@ -62,10 +85,10 @@ Nobody is accountable. Anonymous, disposable, and automated accounts make it tri
 
 ## Who Pumblo Is For
 
-- **AI filmmakers and prompt artists** who want an audience that judges the work, not a platform that buries it under a blanket "may be AI-generated" warning.
-- **Viewers** who want a feed of genuinely good AI content — shorts, animation, music videos, experimental art — without wading through bot-inflated engagement bait to find it.
-- **Educators and explainer creators** using AI video tools, who want to be ranked on clarity and accuracy, not thumbnail psychology.
-- **Anyone curious** what AI video actually looks like right now, in one place, instead of scattered across Discord servers and subreddits.
+- AI filmmakers and prompt artists who want an audience that judges the work, not a platform that buries it under a blanket "may be AI-generated" warning.
+- Viewers who want a feed of genuinely good AI content — shorts, animation, music videos, experimental art — without wading through bot-inflated engagement bait to find it.
+- Educators and explainer creators using AI video tools, who want to be ranked on clarity and accuracy, not thumbnail psychology.
+- Anyone curious what AI video actually looks like right now, in one place, instead of scattered across Discord servers and subreddits.
 
 The one-line promise the whole platform is built around: *every video is AI, every account is a real person, and nothing here is trying to waste your time.*
 
@@ -162,13 +185,6 @@ done
 | `license` | Yes | `all-rights-reserved`, `cc-by-4.0`, `cc-by-nc-4.0`, `cc0` |
 | `prompt_disclosure` | Optional | `public`, `private`, or `none` |
 
-**What happens after you upload**
-1. Pumblo verifies your Human Trust Token before it accepts the file.
-2. The Provenance Service checks the C2PA manifest, or records the self-declared tool if no manifest was supplied.
-3. The Quality Engine scores technical fidelity — temporal coherence, resolution/bitrate efficiency, audio-video sync.
-4. Pumblo computes a preliminary Synthesis Quality Score.
-5. Clean provenance and a passing score → straight to Discovery. Missing/invalid provenance or a borderline score → held for human moderation review, with the creator notified either way.
-
 ## Security Philosophy
 
 Three rules shape every decision below: nothing sensitive ever travels in a URL, every write action is rate-limited before it reaches application code, and a session is a fact the server checks — never a fact the client asserts.
@@ -177,37 +193,18 @@ Three rules shape every decision below: nothing sensitive ever travels in a URL,
 
 **Session integrity.** A session must never be reconstructable from a URL. Pumblo issues session identifiers only inside `HttpOnly`, `Secure`, `SameSite=Strict` cookies — never as a query parameter, path segment, or hash fragment. Copying a Pumblo URL and opening it in a different browser opens the same public page for anyone; it never carries someone else's identity with it. Every request is re-validated server-side against the session store, not just trusted because a cookie is present. Session identifiers rotate on login and on any privilege change, and logging out invalidates the session on the server immediately.
 
-**Proof of Humanity vs. authentication.** An email/password login proves someone controls an inbox — it doesn't prove a human is behind the keyboard, and it doesn't stop one person from farming a hundred accounts. That's a separate, independent check (see [Signing Up](#signing-up-email-password-proof-of-humanity)), layered on top of authentication, not folded into it.
-
-**Anti-DDoS and anti-abuse.** Every request to pumblo.ai passes through an edge network (Cloudflare or equivalent) before it reaches the application: this absorbs volumetric floods, applies managed bot-fight/WAF rules against scripted traffic, and rate-limits by IP at the edge before a request ever touches the origin server. Behind the edge, the application enforces its own per-account and per-IP limits on the routes that matter most — login, signup, upload, comment, like, and every public API endpoint. Large or repeated uploads are throttled per account, and every file is scanned at ingest, before it's ever public.
-
-**Data protection.** TLS everywhere, HSTS enabled, CSRF tokens on every state-changing request (on top of `SameSite` cookies, not instead of them). If richer liveness verification is ever added for Proof-of-Humanity, only a signed attestation of the result is stored — never raw video or a biometric template.
-
-**Content-level safety.** Automated hash-based CSAM detection runs before any upload becomes publicly visible. Zero tolerance, mandatory reporting — no exceptions, no appeal.
-
-The philosophy behind all of it is standard, well-worn security practice, not a Pumblo invention: defense in depth, least privilege, and secure-by-default. Every layer above assumes the layer below it might fail.
+**Proof of Humanity vs. authentication.** An email/password login proves someone controls an inbox — it doesn't prove a human is behind the keyboard, and it doesn't stop one person from farming a hundred accounts. That's a separate, independent check, layered on top of authentication, not folded into it.
 
 ## Marketing and SEO Philosophy
 
-**The first three seconds.** A repo, a landing page, and a shared link all get judged before anyone reads a sentence. Everything above the fold — name, tagline, badge row, hero preview — has to answer "what is this and why should I care" without scrolling. The tagline leads with the one sentence a stranger can repeat to a friend: *every video AI, every account human, zero bots.* The hero image is a real product screenshot, not an abstract graphic, because someone deciding whether to watch trusts a screenshot over a paragraph. Badges exist to signal "this is real and maintained" — the same instinct that makes a build-passing badge reassuring even to someone who'll never open the repo.
-
-**Every watch page is a landing page.** Because Pumblo is a video platform and not a single marketing site, growth is structural, not promotional — each of the (eventually thousands of) individual watch pages is its own indexable entry point from search, and the platform is built so search engines can actually read them:
-- Server-rendering so a crawler sees the full title, description, and metadata on first load, not a blank div waiting on client-side JavaScript.
-- Human-readable slugs (`pumblo.ai/watch/neon-city-chase-a1b2`, not `pumblo.ai/watch?v=a1b2c3`) that describe the content in the URL itself.
-- `schema.org` `VideoObject` structured data plus Open Graph and Twitter Card tags on every watch page, so a shared link renders a title, thumbnail, and duration instead of a bare URL.
-- An auto-generated `sitemap.xml` and `robots.txt` kept current as new videos publish, and canonical tags so reposts don't split ranking signal.
-- Fast Core Web Vitals — lazy-loaded thumbnails, code-split JS, everything served through a CDN — because page speed is itself a ranking factor, not just a UX nicety.
-
-**Shareability.** Clean Open Graph previews so a link posted to X, Discord, or WhatsApp looks good without effort, plus an embeddable player for external sites — every share is a free ad pointed straight at an SEO-optimized page.
-
-Put together, the growth channel for a free, bootstrapped launch is organic search and shareable links, not paid ads — so the product has to sell itself in one glance and be genuinely easy for a search engine to find.
+Every watch page is a landing page. Server-rendered HTML tags, structured VideoObject data, canonical tags, and auto-generated sitemaps ensure search engine indexing and social media preview compatibility.
 
 ## The Synthesis Quality Score
 
 Discovery ranking runs entirely on the Synthesis Quality Score (SQS), not on raw popularity:
 
 ```
-SQS = (0.30 × TFS) + (0.20 × PCS) + (0.25 × HES) + (0.15 × CTS) + (0.10 × FDF) − MP
+SQS = (0.30 * TFS) + (0.20 * PCS) + (0.25 * HES) + (0.15 * CTS) + (0.10 * FDF) - MP
 
   TFS  Technical Fidelity Score       [0–100]
   PCS  Provenance Completeness Score  [0–100]
@@ -216,99 +213,45 @@ SQS = (0.30 × TFS) + (0.20 × PCS) + (0.25 × HES) + (0.15 × CTS) + (0.10 × F
   FDF  Freshness Decay Factor         [0–100, configurable half-life]
   MP   Moderation Penalty             [0–100, subtractive]
 
-Hard rule: any video carrying an unresolved severe moderation
-flag is excluded from Discovery regardless of its SQS.
+Hard rule: any video carrying an unresolved severe moderation flag is excluded from Discovery regardless of its SQS.
 ```
-
-- **Technical Fidelity Score** — automated video-quality analysis: temporal coherence (flicker, warping, morphing artifacts common to generative video), resolution/bitrate efficiency, audio-video sync.
-- **Provenance Completeness Score** — full weight for a valid, unaltered C2PA manifest chain; partial weight for a self-declared tool tag with no cryptographic manifest, which also triggers a review-queue hold below a configurable threshold.
-- **Human Engagement Score** — computed only from accounts holding a currently valid Human Trust Token: watch-through rate, verified-human like ratio, comment depth. Raw view count and click-through rate are deliberately excluded so a misleading thumbnail can't substitute for quality.
-- **Creator Trust Score** — a slowly decaying reputation tied to moderation history, strikes, and account age — resistant to a single viral upload or a burst of new accounts.
-- **Freshness Decay Factor** — a gentle time decay so evergreen high-grade uploads don't permanently crowd out new high-grade ones.
-- **Moderation Penalty** — subtracted for active flags; a severe unresolved flag overrides the score entirely.
 
 ## Trust, Safety, and Content Policy
 
-The verified human behind an account is the publisher of record for what they upload — not Pumblo — consistent with standard user-generated-content liability practice.
+The verified human behind an account is the publisher of record for what they upload.
 
-Always prohibited, regardless of how content was generated:
+Prohibited content:
 - Non-consensual depictions of a real, identifiable person without documented consent on file
-- Child sexual abuse material in any form — zero tolerance, mandatory reporting to the relevant authorities
-- Provenance metadata that's been stripped or falsified to pass AI video off as real footage
+- Child sexual abuse material in any form — zero tolerance, mandatory reporting
+- Provenance metadata that's been stripped or falsified
 - Hate speech, harassment, or incitement to violence
-- Unauthorized commercial-scale use of third-party intellectual property
 - Any camera-captured footage, including AI-upscaled or AI-restored real video
-- Spam, coordinated inauthentic behavior, or artificial engagement of any kind
-
-**Consent Registry** — any upload flagged `depicts_real_person: true` is held out of Discovery until the uploader submits documented consent from the depicted person (or their authorized representative, for public figures). Enforced at the API level; there's no path around it.
-
-**Strikes and appeals** — confirmed violations accrue against the verified account, not just the content item. Three active strikes result in a permanent ban. Every enforcement action is reviewed by a human moderator, and can be appealed — never resolved by automation alone.
 
 ## Handling Many Users at Once
 
-Every layer in the [Launch Philosophy](#launch-philosophy-free-to-run-built-to-scale) stack is stateless or externally-stated by design, which is what turns concurrency into a configuration problem instead of a rewrite:
-
-- The app itself holds no in-memory session or request state — sessions live in Redis, so any number of app instances can serve requests interchangeably.
-- Reads that don't need to hit the database directly — Discovery pages, channel pages, search results — are cached in Redis with short TTLs, so a burst of concurrent viewers hits cache, not Postgres.
-- Video bytes are never served from the application server — they're pulled from object storage through a CDN, so one popular video doesn't degrade the app for everyone else.
-- Uploads and transcoding run through a background job queue instead of blocking the HTTP request, so ten simultaneous uploads don't stall the API for the other ninety users.
-
-None of this requires a dedicated ops team at under 100 users. It requires choosing infrastructure that's concurrent-safe from day one, so the same architecture holds at 10, 1,000, or 100,000 users — the upgrade path is bigger tiers, not a rearchitecture.
+Stateless application design backed by Redis session storage, CDN edge caching, object storage for media delivery, and asynchronous background job queues.
 
 ## Launch Philosophy: Free to Run, Built to Scale
 
-A platform doesn't need a Kubernetes cluster, a message queue, or a GPU inference fleet to serve its first hundred users — it needs infrastructure that's genuinely free at that scale and doesn't demand a rewrite at the next one. Every layer below was chosen because it has a real free tier, not a free trial:
-
-| Layer | Launch choice | Why |
-|---|---|---|
-| Frontend + API | Next.js (App Router) on a free-tier host (e.g. Vercel) | One codebase, server-rendered for SEO, zero-ops deploys |
-| Auth | Email + password, `argon2id` hashing, self-managed sessions | No paid identity vendor, full control of the session model in [Security Philosophy](#security-philosophy) |
-| Database | PostgreSQL on a free-tier managed host (e.g. Supabase, Neon) | Relational integrity for users, videos, and moderation state |
-| Object storage | S3-compatible storage with free egress (e.g. Cloudflare R2) | Egress cost is the single biggest killer for a video platform; free egress removes it |
-| Cache, sessions, rate limiting | Redis on a free-tier serverless host (e.g. Upstash) | Pay-per-request fits bursty small-scale traffic with no idle cost |
-| CDN, DDoS, WAF | Cloudflare (free plan) in front of the domain | Absorbs volumetric attacks and enforces edge rate limits at zero cost |
-| Proof-of-Humanity | Cloudflare Turnstile | Free, privacy-preserving bot check, no CAPTCHA UX tax |
-| Transactional email | Any free-tier transactional provider | Verification emails, moderation notices |
-| Search | PostgreSQL full-text search | No dedicated search cluster needed at this scale |
-| Background jobs | Serverless functions or a Postgres-backed queue | No message-broker cluster needed until throughput demands it |
-
-Free-tier limits change over time — treat the providers above as examples of the category, not a locked-in choice, and check current limits before launch. The point isn't any specific vendor; it's that every layer here scales up by changing a plan, not by re-architecting, which is exactly what makes [handling more users later](#handling-many-users-at-once) a non-event.
+Built on serverless / free-tier infrastructure (Next.js, PostgreSQL, Cloudflare R2, Redis) that scales seamlessly without requiring rearchitecting.
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    U["Browser"] --> CF["Cloudflare Edge — CDN, WAF, DDoS, Rate Limiting"]
-    CLI["Pumblo CLI"] --> CF
-    SDK["API Clients / SDKs"] --> CF
-    CF --> APP["Next.js App — SSR pages + API routes"]
-    APP --> SESS["Session Store (Redis)"]
-    APP --> CACHE["Cache — feed, search, channel pages (Redis)"]
-    APP --> DB["PostgreSQL — users, videos, moderation, comments"]
-    APP --> JOBS["Background Jobs — transcode, provenance check, quality scoring"]
-    JOBS --> STORE["Object Storage — video files (R2 / S3-compatible)"]
-    APP --> STORE
-    CF --> STORE
 ```
-
-| Layer | Responsibility |
-|---|---|
-| Cloudflare Edge | DDoS absorption, WAF, edge rate limiting, CDN for static assets and video delivery |
-| Next.js App | Server-rendered pages for SEO, API routes for web/CLI/SDK clients, all business logic |
-| Session Store | Human Trust Token and session state, shared across every app instance |
-| Cache | Short-TTL cache for Discovery, channel, and search reads |
-| PostgreSQL | Source of truth for accounts, videos, comments, moderation, strikes |
-| Background Jobs | Transcoding, C2PA manifest validation, Technical Fidelity + Synthesis Quality scoring |
-| Object Storage | Raw and processed video files, served to viewers through the CDN, never through the app server |
+User Browser --> Cloudflare Edge (CDN / WAF / DDoS)
+                 --> Next.js Application Server
+                     --> Session Store (Redis)
+                     --> Database (PostgreSQL)
+                     --> Media Storage (Cloudflare R2 / S3)
+```
 
 ## Getting Started (Self-Hosting)
 
-**Prerequisites**
+Prerequisites:
 - Node.js 20+
-- A PostgreSQL database — local, or a free-tier host
-- A Redis instance — local, or a free-tier host
-- An S3-compatible bucket — local via MinIO, or a free-egress provider for production
-- Cloudflare (or equivalent) in front of your domain before it's public
+- PostgreSQL
+- Redis
+- S3-compatible Object Storage
 
 ```bash
 git clone https://github.com/IamOumarIbrahim/pumblo.git
@@ -319,119 +262,99 @@ npm run db:migrate
 npm run dev
 ```
 
-The app is available at `http://localhost:3000`. Deploying is the same repo pointed at production environment variables — push to your host, point `DATABASE_URL` / `REDIS_URL` / the object-storage variables at production services, and put an edge network in front of the domain before opening it up.
+The app is available at http://localhost:3000.
 
-**Bootstrap the first account**
+Bootstrap owner account:
 ```bash
 npm run create-owner -- --email you@example.com
 ```
-Issues a one-time link to set a password and complete verification for the first account, which is automatically granted the Owner role.
 
 ## API and CLI Reference
 
-Pumblo exposes a versioned REST API (`/api/v1`, documented under `/docs/api`) used by the web client, the CLI, and any third-party integration.
-
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/api/v1/auth/signup` | POST | Create an account with email + password |
-| `/api/v1/auth/login` | POST | Authenticate and issue a session |
-| `/api/v1/auth/verify` | POST | Complete the Proof-of-Humanity challenge |
-| `/api/v1/videos` | POST | Upload a video |
-| `/api/v1/videos/:id` | GET | Fetch video metadata, provenance, and quality scores |
-| `/api/v1/videos/:id/comments` | POST | Post a comment (requires a Human Trust Token) |
-| `/api/v1/channels/:handle` | GET | Fetch a channel/creator profile |
-| `/api/v1/search` | GET | Faceted search |
-
-Webhook events: `video.published`, `video.flagged`, `video.removed`.
-
-Official clients: `@pumblo/sdk-js` (Node.js and browser), `pumblo-sdk` on PyPI (well suited to scripting bulk uploads straight from a generation pipeline).
+REST API endpoints:
+- POST /api/v1/auth/signup — Create account
+- POST /api/v1/auth/login — Authenticate
+- POST /api/v1/auth/verify — Proof of Humanity challenge
+- POST /api/v1/videos — Upload video
+- GET /api/v1/videos/:id — Fetch video metadata & SQS scores
+- POST /api/v1/videos/:id/comments — Post comment
+- GET /api/v1/channels/:handle — Fetch channel profile
+- GET /api/v1/search — Faceted search
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `REDIS_URL` | Yes | Redis connection string — sessions, cache, rate limiting |
-| `SESSION_SECRET` | Yes | Signing key for session cookies |
-| `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` | Yes | Object storage credentials (or S3-equivalent variables) |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Yes | Proof-of-Humanity challenge |
-| `RESEND_API_KEY` (or `SMTP_HOST` / `SMTP_USER` / `SMTP_PASSWORD`) | Yes | Verification and moderation emails |
-| `NEXT_PUBLIC_APP_URL` | Yes | Canonical app URL, used in SEO tags and outbound emails |
-| `C2PA_TRUST_LIST_URL` | No | Custom C2PA trust-anchor list; defaults to the public Content Authenticity Initiative list |
+| `REDIS_URL` | Yes | Redis connection string |
+| `SESSION_SECRET` | Yes | Session signing key |
+| `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` | Yes | Object storage credentials |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Yes | Proof of Humanity bot protection |
+| `RESEND_API_KEY` | Yes | Email provider key |
+| `NEXT_PUBLIC_APP_URL` | Yes | Canonical app URL |
+| `C2PA_TRUST_LIST_URL` | No | Custom C2PA trust list URL |
 
 ## Repository Structure
 
 ```
 pumblo/
-├── app/
-│   ├── (marketing)/          # Landing, about, philosophy pages
-│   ├── watch/[slug]/         # Watch page — SSR, SEO-critical
-│   ├── channel/[handle]/     # Channel page
-│   ├── studio/upload/        # Upload Studio
-│   └── api/v1/                # REST API routes
+├── app/                  # Next.js App Router & server
 ├── lib/
-│   ├── auth/                  # Session handling, password hashing, Human Trust Token logic
-│   ├── provenance/             # C2PA manifest parsing and validation
-│   ├── quality/                 # Technical Fidelity + Synthesis Quality scoring
-│   ├── moderation/               # Flag queue, strikes, Consent Registry
-│   └── db/                        # PostgreSQL schema and queries
-├── jobs/                            # Background job handlers — transcode, scoring, provenance
-├── cli/                               # Pumblo CLI source
+│   ├── auth/             # Session handling & Proof of Humanity
+│   ├── provenance/       # C2PA manifest parsing
+│   ├── quality/          # Technical Fidelity & SQS scoring
+│   ├── moderation/       # Flag queue, strikes & consent registry
+│   └── db/               # PostgreSQL schema & database adapter
+├── jobs/                 # Background job queue handlers
+├── cli/                  # Pumblo CLI executable source
 ├── packages/
-│   ├── sdk-js/                         # JS/TS API client
-│   └── sdk-python/                      # Python API client
-├── public/                                # Static assets
-├── docs/                                    # Architecture, API, and trust-and-safety docs
+│   ├── sdk-js/           # JavaScript API client
+│   └── sdk-python/       # Python API client
+├── public/               # Static assets
+├── docs/                 # System & API documentation
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
 └── LICENSE
 ```
 
-## Roadmap
+## Deployment
 
-**MVP — launch scope**
-- Email + password accounts, Proof-of-Humanity challenge, Human Trust Token sessions
-- Upload via Upload Studio, REST API, and CLI
-- C2PA manifest validation and self-declared tool tagging
-- Discovery feed, Watch page, Channel page, Search
-- Synthesis Quality Score v1 ranking
-- Comment, like, and subscribe behind the Human Trust Token interaction firewall
-- Consent Registry for real-person likeness, strikes system
+Deploying Pumblo to production:
 
-**Post-launch**
-- [ ] Creator analytics dashboard
-- [ ] Public SDKs (`@pumblo/sdk-js`, `pumblo-sdk`)
-- [ ] Adaptive-bitrate HLS packaging, once upload volume justifies the transcoding cost
-- [ ] Richer liveness-based verification as an optional upgrade to the Turnstile challenge
-- [ ] Transparency reports and a formal appeals workflow
-- [ ] Optional ActivityPub bridge for cross-instance discovery
-- [ ] Creator tipping and an opt-in ad-revenue share, once there's a community worth sustaining
+1. Push your repository to GitHub.
+2. Connect your repository to a Next.js hosting platform (e.g. Vercel).
+3. Configure production environment variables (`DATABASE_URL`, `REDIS_URL`, `SESSION_SECRET`, `R2_*`, `TURNSTILE_*`, `NEXT_PUBLIC_APP_URL`).
+4. Execute `npm run db:migrate` against your production PostgreSQL instance.
+5. Provision Cloudflare or equivalent CDN in front of your domain.
+
+## GitHub Releases
+
+Production releases follow Semantic Versioning (SemVer):
+
+- `v1.0.0` — Initial production release including SQS Quality Engine, C2PA Provenance Parser, Proof of Humanity auth, REST API v1, and CLI.
+
+Fetch official release bundles via GitHub CLI:
+```bash
+gh release download v1.0.0
+```
 
 ## Contributing
 
-Contributions of any size are welcome — documentation, bug fixes, new Provenance Service parsers for additional generation tools, or entirely new features.
+Contributions of any size are welcome. Please see `CONTRIBUTING.md` for local setup, branch conventions, and contribution guidelines.
 
-1. Read `CONTRIBUTING.md` for local setup, branch naming, and commit conventions.
-2. Check issues labeled `good-first-issue` or `help-wanted`.
-3. Anything touching authentication, sessions, or moderation is a trust-critical path — open a design-discussion issue first.
+1. Fork the repo and create a feature branch (`git checkout -b feat/my-feature`).
+2. Run local tests before submitting a pull request (`npm test`).
+3. Trust-critical changes (auth, sessions, moderation) require opening a design discussion issue first.
 
-Discuss ideas in GitHub Discussions before starting large changes.
+## Code of Conduct
 
-## Code of Conduct and Security Policy
+Pumblo follows the Contributor Covenant Code of Conduct. Please see `CODE_OF_CONDUCT.md` for our standards and enforcement policy.
 
-Pumblo follows the Contributor Covenant Code of Conduct — see `CODE_OF_CONDUCT.md`.
+## Security Policy
 
-Security reports are taken seriously and should never be filed as public issues. Email `security@pumblo.ai` or use GitHub's private vulnerability reporting for this repository. See `SECURITY.md` for full policy.
+Security reports are taken seriously and should never be filed as public issues. Email `security@pumblo.ai` or submit a private security vulnerability report via GitHub. See `SECURITY.md` for full details.
 
 ## License
 
-Pumblo is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
-
-That choice is deliberate. Pumblo's entire value proposition — Proof-of-Humanity, provenance verification, quality-weighted ranking — is a trust guarantee, not just a feature set. AGPL-3.0 requires anyone running a modified version of Pumblo as a network service, including a closed-source fork, to publish their modifications. That closes the one loophole that matters here: a fork can't quietly strip out human verification or provenance checks while still building on the community's code.
-
-Full text in `LICENSE`.
-
----
-
-If you think AI video needs an honest, human-accountable home — [watch something on pumblo.ai](https://www.pumblo.ai), star the repo, or open an issue with your first idea.
+Pumblo is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). See `LICENSE` for the full license text.
