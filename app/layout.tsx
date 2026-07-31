@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
       "Publish an AI film with its tools, workflow, license, creator profile, and feedback attached.",
     applicationName: "Pumblo",
     manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    },
     alternates: { canonical: "/" },
     openGraph: {
       type: "website",
