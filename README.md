@@ -9,6 +9,8 @@
   [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg?style=flat-square&logo=next.js)](https://nextjs.org/)
   [![Vinext](https://img.shields.io/badge/runtime-Vinext-b8ff3d.svg?style=flat-square)](https://github.com/cloudflare/vinext)
   [![No card](https://img.shields.io/badge/setup-no%20card-b8ff3d.svg?style=flat-square)](#-setup--installation)
+  <br />
+  **[Open the live beta](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)**
 </div>
 
 <p align="center">
@@ -139,6 +141,8 @@ The checked-in [`.openai/hosting.json`](.openai/hosting.json) is already bound t
 ```
 
 Deploy through Codex Sites. It provisions the managed bindings, runs the included Drizzle migrations, enables Sign in with ChatGPT, and serves the saved version at the edge. There is no registrar, database, storage, email, OAuth, or payment-card setup in this path.
+
+Current production deployment: **[pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)**
 
 ---
 

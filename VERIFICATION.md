@@ -17,5 +17,7 @@ Verification performed on July 31, 2026 against the release requirements.
 | Upload memory behavior | Source test verifies `request.body` streams to `bucket.put` and multipart buffering is absent | PASS |
 | Social preview | PNG header test verifies exactly 1200 × 630 | PASS |
 | Release build | `npm run verify` | PASS |
+| GitHub CI | [Workflow run 30612204351](https://github.com/IamOumarIbrahim/pumblo/actions/runs/30612204351) | PASS |
+| Public deployment | `/`, `/about`, and `/api/videos` returned `200`; `/api/dev-session` returned `404` | PASS |
 
 The manual browser pass used the same interactions requested for launch testing: two profiles, profile changes, upload completion, playback, public-channel navigation, like, and comment.

@@ -3,6 +3,9 @@ import { Header } from "@/app/components/Header";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    "https://pumblo-ai-video.oumaribrahim123.chatgpt.site",
+  ),
   title: {
     default: "Pumblo - The home of AI video",
     template: "%s | Pumblo",
@@ -17,7 +20,7 @@ export const metadata: Metadata = {
       "Every video AI-generated. Every creator human-accountable.",
     images: [
       {
-        url: "https://raw.githubusercontent.com/IamOumarIbrahim/pumblo/main/public/pumblo-social.png",
+        url: "/pumblo-social.png",
         width: 1200,
         height: 630,
         alt: "Pumblo - The home of AI video",
@@ -29,9 +32,7 @@ export const metadata: Metadata = {
     title: "Pumblo - The home of AI video",
     description:
       "Every video AI-generated. Every creator human-accountable.",
-    images: [
-      "https://raw.githubusercontent.com/IamOumarIbrahim/pumblo/main/public/pumblo-social.png",
-    ],
+    images: ["/pumblo-social.png"],
   },
 };
 
