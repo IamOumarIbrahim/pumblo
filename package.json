@@ -1,9 +1,9 @@
 {
   "name": "pumblo",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "Shareable film pages for AI motion creators, with the process and feedback attached.",
+  "description": "An AI-only video-sharing platform for watching, uploading, and interacting with AI video.",
   "license": "AGPL-3.0-only",
   "engines": {
     "node": ">=22.13.0"

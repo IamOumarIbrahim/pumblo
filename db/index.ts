@@ -1,7 +1,6 @@
 import { env } from "cloudflare:workers";
 import { COMMUNITY_ORDER_SQL } from "@/app/lib/community-ranking";
-
-export const MAX_VIDEO_BYTES = 90 * 1024 * 1024;
+export { MAX_VIDEO_BYTES } from "@/app/lib/limits";
 
 type RuntimeBindings = {
   DB: D1Database;
@@ -16,6 +15,8 @@ export type Profile = {
   location: string;
   website: string;
   avatarColor: string;
+  followerCount: number;
+  followingCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -127,10 +128,22 @@ async function initializeSchema(): Promise<void> {
         FOREIGN KEY (author_email) REFERENCES profiles(email)
       )
     `),
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS follows (
+        creator_email TEXT NOT NULL,
+        follower_email TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        PRIMARY KEY (creator_email, follower_email),
+        FOREIGN KEY (creator_email) REFERENCES profiles(email),
+        FOREIGN KEY (follower_email) REFERENCES profiles(email)
+      )
+    `),
     db.prepare("CREATE INDEX IF NOT EXISTS videos_owner_idx ON videos(owner_email)"),
     db.prepare("CREATE INDEX IF NOT EXISTS videos_created_idx ON videos(created_at DESC)"),
     db.prepare("CREATE INDEX IF NOT EXISTS likes_video_idx ON likes(video_id)"),
     db.prepare("CREATE INDEX IF NOT EXISTS comments_video_idx ON comments(video_id, created_at DESC)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS follows_creator_idx ON follows(creator_email)"),
+    db.prepare("CREATE INDEX IF NOT EXISTS follows_follower_idx ON follows(follower_email)"),
   ]);
 }
 
@@ -153,6 +166,8 @@ export async function getProfileByEmail(
           location,
           website,
           avatar_color AS avatarColor,
+          (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
+          (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
           created_at AS createdAt,
           updated_at AS updatedAt
         FROM profiles
@@ -178,6 +193,8 @@ export async function getProfileByHandle(
           location,
           website,
           avatar_color AS avatarColor,
+          (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
+          (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
           created_at AS createdAt,
           updated_at AS updatedAt
         FROM profiles
@@ -186,6 +203,43 @@ export async function getProfileByHandle(
       .bind(handle.toLowerCase())
       .first<Profile>()) ?? null
   );
+}
+
+export async function listProfiles(options?: {
+  query?: string;
+  limit?: number;
+}): Promise<Profile[]> {
+  await ensureSchema();
+  const query = options?.query?.trim().toLowerCase();
+  const values: unknown[] = [];
+  const where = query
+    ? `(LOWER(handle) LIKE ?1 OR LOWER(display_name) LIKE ?1 OR LOWER(bio) LIKE ?1)`
+    : "";
+  if (query) values.push(`%${query}%`);
+  values.push(Math.min(options?.limit ?? 24, 100));
+  const limitIndex = values.length;
+  const result = await bindings()
+    .DB.prepare(
+      `SELECT
+        email,
+        handle,
+        display_name AS displayName,
+        bio,
+        location,
+        website,
+        avatar_color AS avatarColor,
+        (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
+        (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+      FROM profiles
+      ${where ? `WHERE ${where}` : ""}
+      ORDER BY followerCount DESC, created_at DESC
+      LIMIT ?${limitIndex}`,
+    )
+    .bind(...values)
+    .all<Profile>();
+  return result.results;
 }
 
 export async function saveProfile(input: {
@@ -267,6 +321,7 @@ const videoSelect = `
 
 export async function listVideos(options?: {
   ownerEmail?: string;
+  followedByEmail?: string;
   query?: string;
   category?: string;
   sort?: "newest" | "community";
@@ -280,9 +335,23 @@ export async function listVideos(options?: {
     clauses.push(`v.owner_email = ?${values.length + 1}`);
     values.push(options.ownerEmail.toLowerCase());
   }
+  if (options?.followedByEmail) {
+    clauses.push(
+      `EXISTS (
+        SELECT 1 FROM follows following
+        WHERE following.creator_email = v.owner_email
+          AND following.follower_email = ?${values.length + 1}
+      )`,
+    );
+    values.push(options.followedByEmail.toLowerCase());
+  }
   if (options?.query) {
     clauses.push(
-      `(LOWER(v.title) LIKE ?${values.length + 1} OR LOWER(v.description) LIKE ?${values.length + 1} OR LOWER(v.generation_tool) LIKE ?${values.length + 1})`,
+      `(LOWER(v.title) LIKE ?${values.length + 1}
+        OR LOWER(v.description) LIKE ?${values.length + 1}
+        OR LOWER(v.generation_tool) LIKE ?${values.length + 1}
+        OR LOWER(p.handle) LIKE ?${values.length + 1}
+        OR LOWER(p.display_name) LIKE ?${values.length + 1})`,
     );
     values.push(`%${options.query.toLowerCase()}%`);
   }
@@ -366,6 +435,30 @@ export async function incrementViews(id: string): Promise<void> {
     .DB.prepare("UPDATE videos SET views = views + 1 WHERE id = ?1")
     .bind(id)
     .run();
+}
+
+export async function deleteVideo(
+  id: string,
+  ownerEmail: string,
+): Promise<{ objectKey: string } | null> {
+  await ensureSchema();
+  const db = bindings().DB;
+  const video = await db
+    .prepare(
+      "SELECT object_key AS objectKey FROM videos WHERE id = ?1 AND owner_email = ?2",
+    )
+    .bind(id, ownerEmail.toLowerCase())
+    .first<{ objectKey: string }>();
+  if (!video) return null;
+
+  await db.batch([
+    db.prepare("DELETE FROM comments WHERE video_id = ?1").bind(id),
+    db.prepare("DELETE FROM likes WHERE video_id = ?1").bind(id),
+    db
+      .prepare("DELETE FROM videos WHERE id = ?1 AND owner_email = ?2")
+      .bind(id, ownerEmail.toLowerCase()),
+  ]);
+  return video;
 }
 
 export async function listComments(videoId: string): Promise<Comment[]> {
@@ -458,4 +551,55 @@ export async function toggleLike(
     .bind(videoId)
     .first<{ count: number }>();
   return { liked: !liked, count: result?.count ?? 0 };
+}
+
+export async function getFollowState(
+  creatorEmail: string,
+  followerEmail: string,
+): Promise<boolean> {
+  await ensureSchema();
+  const row = await bindings()
+    .DB.prepare(
+      `SELECT 1 AS following
+       FROM follows
+       WHERE creator_email = ?1 AND follower_email = ?2`,
+    )
+    .bind(creatorEmail.toLowerCase(), followerEmail.toLowerCase())
+    .first<{ following: number }>();
+  return Boolean(row);
+}
+
+export async function toggleFollow(
+  creatorEmail: string,
+  followerEmail: string,
+): Promise<{ following: boolean; count: number }> {
+  await ensureSchema();
+  const creator = creatorEmail.toLowerCase();
+  const follower = followerEmail.toLowerCase();
+  if (creator === follower) throw new Error("You cannot follow yourself.");
+
+  const db = bindings().DB;
+  const following = await getFollowState(creator, follower);
+  if (following) {
+    await db
+      .prepare(
+        "DELETE FROM follows WHERE creator_email = ?1 AND follower_email = ?2",
+      )
+      .bind(creator, follower)
+      .run();
+  } else {
+    await db
+      .prepare(
+        `INSERT OR IGNORE INTO follows (creator_email, follower_email, created_at)
+         VALUES (?1, ?2, ?3)`,
+      )
+      .bind(creator, follower, new Date().toISOString())
+      .run();
+  }
+
+  const result = await db
+    .prepare("SELECT COUNT(*) AS count FROM follows WHERE creator_email = ?1")
+    .bind(creator)
+    .first<{ count: number }>();
+  return { following: !following, count: result?.count ?? 0 };
 }

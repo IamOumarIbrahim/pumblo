@@ -1,43 +1,45 @@
-# Pumblo Release Requirements
+# Pumblo v3 Release Requirements
 
-This checklist defines the market-ready small-beta release implemented by this repository.
+## Product and audience
 
-## Audience and first value
+- `REQ-001` The main product is an AI-only video-sharing platform.
+- `REQ-002` Public visitors can browse, query, watch, share, and open creator channels without authenticating.
+- `REQ-003` The process card remains an optional supporting feature, not the main product.
+- `REQ-004` Home exposes a feed with Trending, Latest, category, and text-query discovery.
+- `REQ-005` Public search matches video text, generation tools, creator handles/names, and profiles.
+- `REQ-006` Profile setup requires only a handle and display name.
+- `REQ-007` The application has no total-profile signup cap.
 
-- `REQ-001` The product names AI filmmakers, animators, music-visual creators, and small studios as its audience.
-- `REQ-002` One creator with zero followers receives a useful public film page, creator profile, process card, and share link.
-- `REQ-003` Public visitors can browse, search, open creator pages, and watch without authenticating.
-- `REQ-004` A creator can reach publishing from the home page without configuring a third-party service or payment card.
-- `REQ-005` Profile setup requires only a handle and display name and suggests a valid handle.
-- `REQ-006` The application has no artificial total-profile cap.
+## Publishing and interaction
 
-## Publishing and community
+- `REQ-008` An authenticated person can create and edit one public creator channel.
+- `REQ-009` A creator can keep two active browser-ready MP4/WebM videos.
+- `REQ-010` Each upload streams into R2 and is limited to 40 MiB.
+- `REQ-011` Published video playback supports HTTP byte ranges.
+- `REQ-012` Tool/model input is free text and supports hybrid workflows.
+- `REQ-013` Another profile can persist one like, post a comment, and follow/unfollow the creator.
+- `REQ-014` Signed-in profiles have a Following feed ordered newest-first.
+- `REQ-015` Owners can delete their own media plus related likes/comments and recover a slot.
+- `REQ-016` Trending uses observable likes, comments, capped views, and newest-time tie-breaking.
+- `REQ-017` Likes, comments, follows, uploads, deletes, and profile writes reject anonymous requests.
+- `REQ-018` Profile email addresses never appear on public pages.
 
-- `REQ-007` An authenticated person can create and later edit one public profile.
-- `REQ-008` A profile can upload up to five browser-ready MP4/WebM films.
-- `REQ-009` A film upload streams to durable R2 storage and is limited to 90 MB.
-- `REQ-010` A published film supports HTTP byte-range playback.
-- `REQ-011` Tool/model input accepts free text and supports hybrid workflows.
-- `REQ-012` A film page exposes a canonical URL, Open Graph metadata, and a share action.
-- `REQ-013` Another profile can watch, persist one like, and post a comment.
-- `REQ-014` Community order uses observable likes, comments, capped views, and newest-time tie-breaking.
-- `REQ-015` Likes, comments, uploads, and profile writes reject anonymous requests.
-- `REQ-016` Profile email addresses never appear in public page output.
+## Hosting, queryability, and operations
 
-## Hosting and operations
-
-- `REQ-017` Setup requires no payment card or third-party service credentials.
-- `REQ-018` `.openai/hosting.json` declares D1 as `DB` and R2 as `MEDIA`.
-- `REQ-019` The deployed worker creates/updates its required D1 schema idempotently.
-- `REQ-020` Production authentication trusts only dispatcher-provided identity headers.
-- `REQ-021` `/api/dev-session` is available only when `NODE_ENV=development`.
-- `REQ-022` The application publishes a robots policy, sitemap, web manifest, and 1200 × 630 social card.
-- `REQ-023` CI runs install, lint, type checking, tests, and a production build.
+- `REQ-019` Setup requires no repository user payment card or third-party secret.
+- `REQ-020` `.openai/hosting.json` declares D1 as `DB` and R2 as `MEDIA`.
+- `REQ-021` The worker creates required D1 tables/indexes idempotently and packages migrations.
+- `REQ-022` Production authentication trusts dispatcher-provided identity headers.
+- `REQ-023` `/api/dev-session` exists only when `NODE_ENV=development`.
+- `REQ-024` The public site publishes robots, creator/video sitemap entries, a manifest, canonical metadata, `VideoObject` JSON-LD, and a 1200 × 630 social card.
+- `REQ-025` `/api/videos` and `/api/profiles` provide public same-origin query endpoints.
+- `REQ-026` The storage envelope is test-enforced at 100 × 2 × 40 MiB = 8,000 MiB.
+- `REQ-027` CI runs install, lint, type checking, tests, production audit, and build.
 
 ## Product integrity
 
-- `REQ-024` Every upload requires an affirmation that AI materially contributed and the creator has publishing rights.
-- `REQ-025` Process information is visibly labeled `creator-declared`.
-- `REQ-026` Pumblo makes no claim of forensic, C2PA, human-authorship, or artistic-quality verification.
-- `REQ-027` The repository documents capacity guards, no-transcoding behavior, moderation limits, and lack of an uptime SLA.
-- `REQ-028` Market promises are enforced by executable release-contract tests and a production smoke test.
+- `REQ-028` Every upload affirms material AI contribution and publishing rights.
+- `REQ-029` Process information is labeled `creator-declared`.
+- `REQ-030` Pumblo makes no forensic, C2PA, human-authorship, artistic-quality, indexing, uptime, or free-forever guarantee.
+- `REQ-031` The repository documents provider research, capacity guards, no transcoding, and moderation limits.
+- `REQ-032` Market promises are enforced by release-contract tests and production HTTP/API probes.

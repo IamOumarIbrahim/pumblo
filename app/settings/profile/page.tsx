@@ -26,7 +26,7 @@ export default async function ProfileSettingsPage({
         </h1>
         <p>
           {profile
-            ? "Update the public details attached to every film you publish."
+            ? "Update the public details on your creator channel."
             : "A display name and handle are all you need. Everything else is optional."}
         </p>
       </div>

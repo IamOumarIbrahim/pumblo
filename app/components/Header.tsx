@@ -23,19 +23,22 @@ export async function Header() {
           <input
             name="q"
             type="search"
-            placeholder="Search films, creators, tools"
+            placeholder="Search videos, creators, tools"
             aria-label="Search Pumblo"
           />
         </form>
 
         <nav className="header-actions" aria-label="Primary navigation">
-          <Link className="nav-link desktop-only" href="/#how-it-works">
-            How it works
+          <Link className="nav-link desktop-only" href="/#feed">
+            Browse
           </Link>
           {user ? (
             <>
+              <Link className="nav-link desktop-only" href="/following">
+                Following
+              </Link>
               <Link className="button button-primary" href="/upload">
-                <span aria-hidden="true">＋</span> New film
+                <span aria-hidden="true">＋</span> Upload video
               </Link>
               <Link
                 className="profile-chip"
@@ -59,7 +62,7 @@ export async function Header() {
             </>
           ) : (
             <Link className="button button-primary" href="/upload">
-              Publish a film
+              Upload video
             </Link>
           )}
         </nav>

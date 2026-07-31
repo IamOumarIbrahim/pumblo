@@ -5,19 +5,28 @@ Pumblo is one Vinext worker deployed through Sites. There is no separate databas
 ```mermaid
 flowchart TD
     U["Public visitor"] --> APP["Next.js / Vinext worker"]
-    C["ChatGPT-authenticated visitor"] --> DISP["Sites auth dispatcher"]
+    C["Authenticated creator"] --> DISP["Sites auth dispatcher"]
     DISP --> APP
-    APP --> DB["D1 binding: DB"]
+    APP --> DB["D1: profiles, videos, likes, comments, follows"]
     APP --> STORE["R2 binding: MEDIA"]
-    STORE --> MEDIA["/media/:id range responses"]
+    STORE --> MEDIA["/media/:id byte-range responses"]
     MEDIA --> U
     MEDIA --> C
 ```
 
-The worker runs idempotent `CREATE TABLE IF NOT EXISTS` statements before data access. Drizzle migration files are also packaged with the deployment for platform provisioning.
+The worker runs idempotent `CREATE TABLE IF NOT EXISTS` statements before data access. Drizzle migration files are also packaged for deployment; migration `0002` adds follows and its creator/follower indexes.
 
-The production auth adapter reads dispatcher-provided email and optional display-name headers. A development-only HttpOnly cookie replaces those headers for local two-person testing; its issuing route returns `404` in production.
+The production auth adapter reads dispatcher-provided email and optional display-name headers. A development-only HttpOnly cookie replaces those headers for local multi-person testing; its issuing route returns `404` in production.
 
-Public pages expose canonical metadata, route-specific Open Graph data, a sitemap, and a robots policy. Film sharing is client-side progressive enhancement: native Web Share when present and the Clipboard API otherwise.
+Public pages expose canonical metadata, `VideoObject` JSON-LD, a creator/video sitemap, a robots policy, and progressive native/clipboard sharing.
 
-Community discovery is calculated from persisted likes, comments, capped views, and publication time. The legacy `sqs_score` database column remains only for migration compatibility and is neither selected nor shown by the product.
+Discovery has two independent paths:
+
+- **Trending / Latest**: SQL orders persisted video activity or publication time.
+- **Following**: an indexed `follows` relation filters videos by creators the viewer explicitly selected.
+
+Search queries titles, descriptions, tools, creator handles, creator display names, and public profile fields. The public `/api/videos` and `/api/profiles` routes expose the same query surface.
+
+Trending activity is calculated from persisted likes, comments, capped views, and publication time. The legacy `sqs_score` database column remains only for migration compatibility and is never selected or displayed.
+
+The storage boundary is centralized in `app/lib/limits.ts`: two active videos per creator, 40 MiB each, and a documented 100-creator launch target. Deleting an owned video first removes the R2 object and then its comments, likes, and D1 record.

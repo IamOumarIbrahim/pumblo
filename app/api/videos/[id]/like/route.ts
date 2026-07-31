@@ -9,14 +9,14 @@ export async function POST(
   if (!user) return Response.json({ error: "Sign in required." }, { status: 401 });
   if (!(await getProfileByEmail(user.email))) {
     return Response.json(
-      { error: "Create your profile before liking films." },
+      { error: "Create your profile before liking videos." },
       { status: 403 },
     );
   }
 
   const { id } = await params;
   if (!(await getVideo(id))) {
-    return Response.json({ error: "Film not found." }, { status: 404 });
+    return Response.json({ error: "Video not found." }, { status: 404 });
   }
 
   return Response.json(await toggleLike(id, user.email));

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Avatar } from "@/app/components/Avatar";
 import { VideoCard } from "@/app/components/VideoCard";
-import { listVideos } from "@/db";
+import { listProfiles, listVideos } from "@/db";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,10 @@ export default async function Home({
   const query = params.q?.trim().slice(0, 80) ?? "";
   const category = params.category ?? "all";
   const sort = params.sort === "newest" ? "newest" : "community";
-  const videos = await listVideos({ query, category, sort });
+  const [videos, creators] = await Promise.all([
+    listVideos({ query, category, sort }),
+    query ? listProfiles({ query, limit: 6 }) : Promise.resolve([]),
+  ]);
 
   return (
     <main>
@@ -30,47 +34,44 @@ export default async function Home({
         <div className="hero-grid">
           <div className="eyebrow">
             <span className="live-dot" />
-            For AI motion creators
+            AI video / open beta
           </div>
           <h1>
-            Give the clip a home.
+            Watch what AI can imagine.
             <br />
-            <em>Keep the process.</em>
+            <em>Nothing else.</em>
           </h1>
           <p className="hero-copy">
-            Turn a finished AI film into one clean, public page with the tool,
-            workflow, license, creator profile, and feedback attached.
+            Pumblo is an AI-only video-sharing network. Watch, upload, search,
+            follow creators, and join the conversation around every render.
           </p>
           <div className="hero-actions">
-            <Link className="button button-primary button-large" href="/upload">
-              Create a film page <span aria-hidden="true">↗</span>
-            </Link>
-            <a
-              className="button button-ghost button-large"
-              href="#how-it-works"
-            >
-              See how it works
+            <a className="button button-primary button-large" href="#feed">
+              Explore videos <span aria-hidden="true">↓</span>
             </a>
+            <Link className="button button-ghost button-large" href="/upload">
+              Upload video <span aria-hidden="true">↗</span>
+            </Link>
           </div>
           <p className="hero-note">
-            Free to browse · no follower minimum · open source
+            Free to watch · creator channels · likes, comments, and follows
           </p>
         </div>
         <aside className="hero-manifesto">
-          <span className="manifesto-index">THE “WHO USES THIS?” TEST</span>
+          <span className="manifesto-index">THE FEED HAS ONE RULE</span>
           <p>
-            A creator should get value from the first upload—even before a feed
-            has an audience.
+            AI must materially shape every video. The work leads; the process
+            card is there when you want the story behind it.
           </p>
           <div className="manifesto-rule" />
           <div className="manifesto-stats">
             <span>
-              <strong>~2 min</strong>
-              to publish
+              <strong>100</strong>
+              creator launch
             </span>
             <span>
-              <strong>90 MB</strong>
-              per film
+              <strong>40 MB</strong>
+              per video
             </span>
             <span>
               <strong>AGPL</strong>
@@ -80,57 +81,24 @@ export default async function Home({
         </aside>
       </section>
 
-      <section className="value-section" aria-labelledby="value-title">
-        <div className="value-heading">
-          <span className="section-kicker">Useful before it is popular</span>
-          <h2 id="value-title">One upload. Three reasons to share it.</h2>
-        </div>
-        <div className="value-grid">
-          <article>
-            <span>01</span>
-            <h3>A page, not a file dump</h3>
-            <p>
-              Send one watchable link to a client, collaborator, Discord, or
-              portfolio without explaining the context again.
-            </p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>The recipe stays attached</h3>
-            <p>
-              Credit any model or tool, describe a hybrid workflow, choose a
-              license, and reveal as much prompt detail as you want.
-            </p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Feedback has a home</h3>
-            <p>
-              Likes and comments live beside the film instead of disappearing
-              across group chats and temporary social posts.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section className="discovery" id="discovery">
+      <section className="discovery" id="feed">
         <div className="section-heading">
           <div>
-            <span className="section-kicker">Made in public</span>
-            <h2>{query ? `Results for “${query}”` : "Films with the process attached"}</h2>
+            <span className="section-kicker">AI-only feed</span>
+            <h2>{query ? `Results for “${query}”` : "Trending AI videos"}</h2>
           </div>
-          <div className="sort-links" aria-label="Sort films">
+          <div className="sort-links" aria-label="Sort videos">
             <Link
               className={sort === "community" ? "active" : ""}
               href={filterHref({ query, category, sort: "community" })}
             >
-              Community
+              Trending
             </Link>
             <Link
               className={sort === "newest" ? "active" : ""}
               href={filterHref({ query, category, sort: "newest" })}
             >
-              Newest
+              Latest
             </Link>
           </div>
         </div>
@@ -147,6 +115,27 @@ export default async function Home({
           ))}
         </div>
 
+        {creators.length ? (
+          <div className="creator-results" aria-label="Matching creators">
+            <span className="section-kicker">Creators</span>
+            <div>
+              {creators.map((creator) => (
+                <Link key={creator.handle} href={`/profile/${creator.handle}`}>
+                  <Avatar
+                    name={creator.displayName}
+                    color={creator.avatarColor}
+                    size="md"
+                  />
+                  <span>
+                    <strong>{creator.displayName}</strong>
+                    <small>@{creator.handle} · {creator.followerCount} followers</small>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {videos.length ? (
           <div className="video-grid">
             {videos.map((video) => (
@@ -155,51 +144,81 @@ export default async function Home({
           </div>
         ) : (
           <div className="empty-state">
-            <span className="empty-glyph" aria-hidden="true">
-              ◇
-            </span>
+            <span className="empty-glyph" aria-hidden="true">◇</span>
             <h3>
-              {query
-                ? "No films matched that search"
-                : "Start with one film, not a follower count"}
+              {query ? "No AI videos matched that search" : "The feed is ready for its first AI video"}
             </h3>
             <p>
               {query
                 ? "Try a title, creator, tool, or broader phrase."
-                : "Your first upload already gives you a polished film page, a public creator profile, and a link worth sharing."}
+                : "Upload something AI made possible. Viewers can watch without creating an account."}
             </p>
             <Link className="button button-primary" href="/upload">
-              Publish the first film
+              Upload the first video
             </Link>
           </div>
         )}
       </section>
 
+      <section className="value-section" aria-labelledby="value-title">
+        <div className="value-heading">
+          <span className="section-kicker">A video network with receipts</span>
+          <h2 id="value-title">Watch first. Go deeper when it matters.</h2>
+        </div>
+        <div className="value-grid">
+          <article>
+            <span>01</span>
+            <h3>Discover AI video</h3>
+            <p>
+              Search titles, creators, and tools, then move between trending,
+              latest, category, and following feeds.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>React and follow</h3>
+            <p>
+              Like, comment, follow a channel, and return to fresh uploads from
+              the people whose work you care about.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Go behind the render</h3>
+            <p>
+              Every video can carry an optional process card with tools,
+              workflow, license, and creator notes. It supports the video; it
+              does not replace it.
+            </p>
+          </article>
+        </div>
+      </section>
+
       <section className="how-section" id="how-it-works">
         <div className="how-heading">
-          <span className="section-kicker">No growth-hack homework</span>
-          <h2>From finished render to shareable page in three moves.</h2>
+          <span className="section-kicker">Watch. Upload. Interact.</span>
+          <h2>A familiar video loop, reserved for AI-made work.</h2>
         </div>
         <ol className="how-steps">
           <li>
             <b>1</b>
             <div>
-              <h3>Claim a creator handle</h3>
-              <p>Sign in, choose a name, and skip every optional field.</p>
+              <h3>Browse without an account</h3>
+              <p>Search the feed, watch videos, and open creator channels.</p>
             </div>
           </li>
           <li>
             <b>2</b>
             <div>
-              <h3>Upload a browser-ready clip</h3>
-              <p>Add the tool, workflow, license, and optional process notes.</p>
+              <h3>Create a channel and upload</h3>
+              <p>Sign in only when you want to publish or participate.</p>
             </div>
           </li>
           <li>
             <b>3</b>
             <div>
-              <h3>Share the film page</h3>
-              <p>Viewers watch without an account; sign-in is only for actions.</p>
+              <h3>Build a real audience loop</h3>
+              <p>Likes, comments, follows, and shareable video URLs stay together.</p>
             </div>
           </li>
         </ol>
@@ -208,10 +227,10 @@ export default async function Home({
       <section className="open-source-band">
         <div>
           <span className="section-kicker">Built in public</span>
-          <h2>Trust the product by reading the code.</h2>
+          <h2>Use the platform. Inspect the code.</h2>
           <p>
-            Pumblo is AGPL-licensed, fact-checked in the repository, and shipped
-            with executable release gates.
+            Pumblo is AGPL-licensed, openly documented, and shipped with
+            executable release gates.
           </p>
         </div>
         <a

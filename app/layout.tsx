@@ -19,11 +19,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase,
     title: {
-      default: "Pumblo - Film pages for AI motion creators",
+      default: "Pumblo - The AI-only video platform",
       template: "%s | Pumblo",
     },
     description:
-      "Publish an AI film with its tools, workflow, license, creator profile, and feedback attached.",
+      "Watch, upload, search, like, comment, and follow AI video creators.",
     applicationName: "Pumblo",
     manifest: "/manifest.webmanifest",
     icons: {
@@ -34,23 +34,23 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       url: "/",
       siteName: "Pumblo",
-      title: "Give the clip a home. Keep the process.",
+      title: "AI video. Nothing else.",
       description:
-        "Shareable film pages for AI motion creators, with the process and feedback attached.",
+        "A public video-sharing network for watching, uploading, and interacting with AI-made video.",
       images: [
         {
           url: "/og.png",
           width: 1200,
           height: 630,
-          alt: "Pumblo - Give the clip a home. Keep the process.",
+          alt: "Pumblo - AI video. Nothing else.",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Give the clip a home. Keep the process.",
+      title: "AI video. Nothing else.",
       description:
-        "Shareable film pages for AI motion creators, with the process and feedback attached.",
+        "Watch, upload, search, like, comment, and follow AI video creators.",
       images: ["/og.png"],
     },
   };
@@ -75,11 +75,12 @@ export default function RootLayout({
               <span className="brand-mark">P</span>
               <span>Pumblo</span>
             </span>
-            <p>Film pages for AI motion creators.</p>
+            <p>The AI-only video platform.</p>
           </div>
           <div className="footer-links">
-            <Link href="/#how-it-works">How it works</Link>
-            <Link href="/about">Product philosophy</Link>
+            <Link href="/#feed">Browse</Link>
+            <Link href="/following">Following</Link>
+            <Link href="/about">About</Link>
             <a
               href="https://github.com/IamOumarIbrahim/pumblo"
               rel="noreferrer"
@@ -87,7 +88,7 @@ export default function RootLayout({
             >
               Star on GitHub ↗
             </a>
-            <span>Open beta · no follower minimum</span>
+            <span>Built for the first 100 creators</span>
           </div>
         </footer>
       </body>

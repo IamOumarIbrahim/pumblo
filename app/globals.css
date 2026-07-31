@@ -196,6 +196,17 @@ select:focus-visible {
   border-color: #4e5560;
 }
 
+.button-danger {
+  border-color: rgba(255, 107, 107, 0.42);
+  background: rgba(255, 107, 107, 0.08);
+  color: #ffadad;
+}
+
+.button-danger:hover {
+  border-color: var(--danger);
+  background: rgba(255, 107, 107, 0.14);
+}
+
 .button-large {
   min-height: 50px;
   padding: 0 22px;
@@ -524,6 +535,54 @@ select:focus-visible {
   border-color: var(--accent);
   background: rgba(184, 255, 61, 0.08);
   color: var(--accent);
+}
+
+.creator-results {
+  margin: -8px 0 34px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.creator-results > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.creator-results a {
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.creator-results a:hover {
+  border-color: #4e5560;
+}
+
+.creator-results a > span:last-child {
+  min-width: 0;
+  display: grid;
+}
+
+.creator-results strong,
+.creator-results small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator-results small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
 }
 
 .video-grid {
@@ -932,6 +991,21 @@ label small {
 .profile-name-row p {
   margin: 4px 0 0;
   color: var(--muted);
+}
+
+.follow-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.follow-control small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.follow-control .form-error {
+  max-width: 220px;
 }
 
 .profile-bio {
@@ -1485,6 +1559,40 @@ button.share-button {
   padding: 100px 0 130px;
 }
 
+.following-page {
+  width: var(--content);
+  min-height: calc(100vh - 72px);
+  margin: auto;
+  padding: 80px 0 120px;
+}
+
+.page-heading {
+  max-width: 760px;
+  margin-bottom: 42px;
+}
+
+.page-heading h1 {
+  margin: 10px 0 12px;
+  font-size: clamp(48px, 6vw, 82px);
+  letter-spacing: -0.065em;
+  line-height: 0.95;
+}
+
+.page-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.delete-video-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
 .content-page > h1 {
   max-width: 900px;
 }
@@ -1788,6 +1896,12 @@ button.share-button {
   }
 
   .profile-name-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .follow-control,
+  .delete-video-control {
     align-items: stretch;
     flex-direction: column;
   }

@@ -86,3 +86,21 @@ export const comments = sqliteTable(
     index("comments_video_idx").on(table.videoId, table.createdAt),
   ],
 );
+
+export const follows = sqliteTable(
+  "follows",
+  {
+    creatorEmail: text("creator_email")
+      .notNull()
+      .references(() => profiles.email),
+    followerEmail: text("follower_email")
+      .notNull()
+      .references(() => profiles.email),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.creatorEmail, table.followerEmail] }),
+    index("follows_creator_idx").on(table.creatorEmail),
+    index("follows_follower_idx").on(table.followerEmail),
+  ],
+);

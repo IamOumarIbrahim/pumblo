@@ -1,8 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-
-const MAX_BYTES = 90 * 1024 * 1024;
+import { MAX_VIDEO_BYTES } from "@/app/lib/limits";
 
 export function UploadForm() {
   const fileInput = useRef<HTMLInputElement>(null);
@@ -27,8 +26,8 @@ export function UploadForm() {
       setError("Use an MP4 or WebM video.");
       return;
     }
-    if (nextFile.size > MAX_BYTES) {
-      setError("Video must be smaller than 90 MB for the free beta.");
+    if (nextFile.size > MAX_VIDEO_BYTES) {
+      setError("Video must be smaller than 40 MB for the no-card launch.");
       return;
     }
     setFile(nextFile);
@@ -120,7 +119,7 @@ export function UploadForm() {
               ↑
             </span>
             <strong>Drop your finished render here</strong>
-            <small>or choose an MP4 / WebM file · maximum 90 MB</small>
+            <small>or choose an MP4 / WebM file · maximum 40 MB</small>
           </button>
         )}
         <input
@@ -147,7 +146,7 @@ export function UploadForm() {
       <div className="upload-recipe" aria-label="Upload checklist">
         <span>Before you publish</span>
         <p>
-          Use a browser-ready H.264 MP4 or WebM, keep it below 90 MB, and make
+          Use a browser-ready H.264 MP4 or WebM, keep it below 40 MB, and make
           sure you have the right to share every element.
         </p>
       </div>
@@ -160,7 +159,7 @@ export function UploadForm() {
             name="title"
             minLength={2}
             maxLength={100}
-            placeholder="Give the film a memorable title"
+            placeholder="Give the video a memorable title"
           />
         </label>
         <label className="full-field">
@@ -236,7 +235,7 @@ export function UploadForm() {
       <label className="policy-check">
         <input required type="checkbox" name="aiDeclaration" value="yes" />
         <span>
-          I confirm AI was a material part of this film’s production, I have the
+          I confirm AI was a material part of this video’s production, I have the
           right to publish it, and the process details above are accurate.
         </span>
       </label>
@@ -250,8 +249,8 @@ export function UploadForm() {
             {phase === "uploading"
               ? `Uploading securely… ${progress}%`
               : phase === "saving"
-                ? "Saving film details…"
-                : "Published. Opening your film…"}
+                ? "Saving video details…"
+                : "Published. Opening your video…"}
           </p>
         </div>
       ) : null}
@@ -263,11 +262,11 @@ export function UploadForm() {
           className="button button-primary button-large"
           disabled={phase !== "idle"}
         >
-          {phase === "idle" ? "Publish film" : "Publishing…"}
+          {phase === "idle" ? "Publish video" : "Publishing…"}
         </button>
         <p>
-          Film pages are public immediately. Process information is clearly
-          labeled creator-declared.
+          Videos are public immediately. Process information is optional and
+          clearly labeled creator-declared.
         </p>
       </div>
     </form>

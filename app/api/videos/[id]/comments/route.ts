@@ -12,7 +12,7 @@ export async function GET(
 ) {
   const { id } = await params;
   if (!(await getVideo(id))) {
-    return Response.json({ error: "Film not found." }, { status: 404 });
+    return Response.json({ error: "Video not found." }, { status: 404 });
   }
   return Response.json({ comments: await listComments(id) });
 }
@@ -32,7 +32,7 @@ export async function POST(
 
   const { id } = await params;
   if (!(await getVideo(id))) {
-    return Response.json({ error: "Film not found." }, { status: 404 });
+    return Response.json({ error: "Video not found." }, { status: 404 });
   }
 
   const body = (await request.json()) as { content?: unknown };

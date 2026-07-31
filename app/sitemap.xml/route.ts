@@ -1,12 +1,23 @@
-import { listVideos } from "@/db";
+import { listProfiles, listVideos } from "@/db";
 
 const base = "https://pumblo-ai-video.oumaribrahim123.chatgpt.site";
 
 export async function GET() {
-  const videos = await listVideos({ sort: "newest", limit: 100 });
+  const [videos, profiles] = await Promise.all([
+    listVideos({ sort: "newest", limit: 100 }),
+    listProfiles({ limit: 100 }),
+  ]);
   const entries = [
     urlEntry(base, new Date().toISOString(), "daily", "1.0"),
     urlEntry(`${base}/about`, undefined, "monthly", "0.6"),
+    ...profiles.map((profile) =>
+      urlEntry(
+        `${base}/profile/${encodeURIComponent(profile.handle)}`,
+        profile.updatedAt,
+        "weekly",
+        "0.7",
+      ),
+    ),
     ...videos.map((video) =>
       urlEntry(
         `${base}/watch/${encodeURIComponent(video.id)}`,

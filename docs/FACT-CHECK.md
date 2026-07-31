@@ -2,46 +2,54 @@
 
 Checked July 31, 2026. Product copy is intentionally narrower than the available evidence.
 
-## What adjacent products already do
+## Product position
 
-- Runway can create public asset links that include generation details such as inputs and seeds. Source: [Runway, “How to share an asset”](https://help.runwayml.com/hc/en-us/articles/25562277393427-How-to-share-an-asset).
-- Runway also operates a viewing destination for AI works. Source: [Runway, “Navigating Runway”](https://help.runwayml.com/hc/en-us/articles/24298206897043-Navigating-Runway).
-- OpenAI states that the Sora product is no longer available as of April 26, 2026. Source: [OpenAI, “Sora feed philosophy”](https://openai.com/index/sora-feed-philosophy/).
+Some generation tools already expose public assets or galleries. That makes “share a generation” an insufficient product.
 
-**Product inference:** “Share an AI generation” is not a sufficient wedge. Pumblo differentiates through a tool-neutral film page, a creator-owned public profile, licensing/process context across hybrid workflows, feedback, and open-source inspectability. Sora is deliberately absent from suggestions; free-text entry prevents the UI from depending on a permanent vendor list.
+Pumblo's claim is narrower and testable: it is an open-source, tool-neutral, AI-only video-sharing platform with public watching, uploads, queryable discovery, creator channels, likes, comments, follows, and optional process context.
+
+The process card is not the main product. It is a secondary **Behind the render** feature attached to a video-first experience.
 
 ## What provenance can and cannot prove
 
-The C2PA explainer describes Content Credentials as tamper-evident provenance data and explicitly distinguishes that evidence from a judgment that content is true. Source: [C2PA Technical Specification 2.3 explainer](https://spec.c2pa.org/specifications/specifications/2.3/explainer/_attachments/Explainer.pdf).
+The [C2PA 2.3 explainer](https://spec.c2pa.org/specifications/specifications/2.3/explainer/_attachments/Explainer.pdf) describes Content Credentials as tamper-evident provenance information and distinguishes that evidence from a truth judgment.
 
-Pumblo does not currently read or validate C2PA manifests. It records an authenticated creator's declaration and labels process fields `creator-declared`. It must not claim:
+Pumblo does not read or validate C2PA manifests. It records an authenticated creator's declaration and labels process fields `creator-declared`. It must not claim:
 
-- that a film is forensically proven to be AI-generated;
+- that a video is forensically proven to be AI-generated;
 - that a person created every part of it;
-- that the depicted scene is true;
-- or that a hidden score measures artistic quality.
+- that a depicted scene is true;
+- or that its ranking formula measures artistic quality.
 
 ## Hosting and capacity
 
-Cloudflare documents free allowances for direct R2 and D1 usage:
+The current comparison uses official provider sources and is maintained in [`HOSTING-100-USERS.md`](HOSTING-100-USERS.md).
 
-- [R2 pricing](https://developers.cloudflare.com/r2/pricing/) lists a monthly free tier for standard storage, operations, and egress.
-- [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) and [D1 limits](https://developers.cloudflare.com/d1/platform/limits/) document Free-plan query, storage, and database limits.
+The application enforces a maximum media envelope of 8,000 MiB for 100 fully utilized creator accounts. This is below direct R2's published 10 GB-month Standard-storage free allowance, but direct Cloudflare allowance numbers do not establish Sites-managed quotas.
 
-**Deployment caveat:** this repository uses Sites-managed D1 and R2 bindings. Direct Cloudflare allowance numbers do not establish the Sites product's quotas, availability, or future pricing. Therefore Pumblo promises no-card setup for the configured path and conservative application guards; it does not promise “free forever,” a specific uptime, or unlimited users. “First ten users” is a launch test target, not a hard signup cap.
+Therefore Pumblo claims:
 
-## Share metadata
+- a currently working no-card path through the configured Sites project;
+- an explicit 100-creator storage design target;
+- and no application-level signup wall.
 
-Next.js documents file/function conventions for metadata, Open Graph images, and web manifests:
+It does not claim free hosting forever, unlimited bandwidth, an uptime SLA, or 100 simultaneous uploads.
 
-- [Metadata and Open Graph images](https://nextjs.org/docs/app/getting-started/metadata-and-og-images)
-- [`generateMetadata`](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)
-- [Web app manifest](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest)
+## Search-engine surfaces
 
-Pumblo implements generated page metadata, canonical links, explicit Vinext routes for the manifest/robots/sitemap endpoints, and a checked 1200 × 630 social asset. Explicit routes are used because production probing showed that the Next.js metadata file conventions were not packaged by the current Vinext/Sites path. Tests verify the source contracts; production probes verify the public endpoints.
+Pumblo ships:
+
+- canonical URLs for videos and creator channels;
+- `VideoObject` structured data on watch pages;
+- an XML sitemap containing public profiles and videos;
+- a robots policy pointing to the sitemap;
+- explicit Vinext routes for the web manifest, robots, sitemap, and favicon;
+- and a checked 1200 × 630 Open Graph asset.
+
+These surfaces make the domain crawlable and queryable. Search-engine indexing and ranking remain controlled by the search engines and are not guaranteed.
 
 ## Dependency security
 
-The release locks Next.js and `eslint-config-next` to 16.2.12. The earlier 16.2.6 tree was rejected after `npm audit --omit=dev` reported published high-severity advisories affecting Next.js and transitive PostCSS/Sharp versions. The release gate reruns the production-only audit after the patch upgrade and records the result in [`VERIFICATION.md`](../VERIFICATION.md).
+The release locks Next.js and `eslint-config-next` to 16.2.12. `npm audit --omit=dev` is a required gate for deployed dependencies.
 
-`npm audit` without `--omit=dev` currently reports nine high-severity paths through ESLint 9 plugins, Minimatch, and Brace Expansion ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg)). Those packages are development-only and are not included in the deployed worker. Forcing ESLint 10 would violate the current Next ESLint plugin peer ranges, so the repository keeps the compatible lint stack, enforces a clean production audit, and documents the remaining development advisory instead of claiming the entire install is clean.
+An unqualified `npm audit` currently reports development-only advisory paths through the ESLint toolchain. Those packages do not ship in the worker. Forcing an incompatible ESLint major is not used to manufacture a clean claim; the production audit remains the release boundary.

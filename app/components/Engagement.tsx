@@ -61,10 +61,10 @@ export function Engagement({
     setBusy(false);
   }
 
-  async function shareFilm() {
+  async function shareVideo() {
     const share = {
       title: document.title,
-      text: "Watch this film and see the process behind it.",
+      text: "Watch this AI video on Pumblo.",
       url: window.location.href,
     };
     try {
@@ -127,7 +127,7 @@ export function Engagement({
         <a className="share-button" href="#comments">
           Comment · {comments.length}
         </a>
-        <button className="share-button" type="button" onClick={shareFilm}>
+        <button className="share-button" type="button" onClick={shareVideo}>
           {shareLabel}
         </button>
       </div>

@@ -1,4 +1,4 @@
-# Pumblo v2.1 Verification
+# Pumblo v3 Verification
 
 Verification performed July 31, 2026 against [`REQUIREMENTS.md`](REQUIREMENTS.md).
 
@@ -10,48 +10,35 @@ Verification performed July 31, 2026 against [`REQUIREMENTS.md`](REQUIREMENTS.md
 | :--- | :--- |
 | ESLint | PASS |
 | TypeScript `tsc --noEmit` | PASS |
-| Node test runner | PASS — 15 tests |
+| Node test runner | PASS — 21 tests |
 | Production dependency audit | PASS — 0 vulnerabilities |
-| Vinext production build | PASS |
+| Vinext production build | PASS — 20 routes |
 
-The tests cover hosting bindings, removal of the signup cap, storage guards, streamed uploads, the production auth boundary, required routes, audience/value copy, profile/upload friction, canonical sharing, explicit Vinext metadata endpoints, Open Graph dimensions, honest trust language, and the community-order formula.
+The tests cover hosting bindings, the 100-creator capacity envelope, streamed uploads, dispatcher authentication, the video-first product contract, secondary process context, low-friction profiles, follows, creator/video queries, public API privacy, owner deletion, canonical metadata, structured data, sitemap entries, social-card dimensions, honest trust language, and the Trending formula.
 
-## Local runtime smoke test
+## Local HTTP and interaction smoke test
 
-The updated app ran through Vinext 0.0.50 with Vite 8.2.0 on port 4177.
+The app ran through Vinext 0.0.50 with Vite 8.2.0 on port 4177.
 
 | Probe | Evidence | Result |
 | :--- | :--- | :--- |
-| Home | `GET /` returned `200`; audience, primary CTA, and GitHub star copy rendered | PASS |
-| Product philosophy | `GET /about` returned `200` | PASS |
-| Film API | `GET /api/videos` returned `200` and existing durable film data | PASS |
-| Creator page | `GET /profile/alice_nova` returned `200` | PASS |
-| Film page | Existing watch page returned `200` with process, sharing, and canonical metadata | PASS |
-| Range playback | `Range: bytes=0-99` returned `206`, 100 bytes, and valid `Content-Range` | PASS |
-| Metadata routes | Manifest, robots, sitemap, and `og.png` each returned `200` with the expected content type | PASS |
-| Write boundary | Anonymous `GET /upload` redirected to Sign in with ChatGPT | PASS |
+| Home | `GET /` returned `200` and rendered the AI-only video-network proposition | PASS |
+| About | `GET /about` returned `200` | PASS |
+| Video query | `GET /api/videos?q=alice` returned the matching durable video | PASS |
+| Creator query | `GET /api/profiles?q=alice` returned the matching creator | PASS |
+| Search results | `GET /?q=alice` rendered creator and video results | PASS |
+| Following | Bob followed Alice and `/following` rendered Alice's video | PASS |
+| Owner boundary | Bob's attempt to delete Alice's video returned `403` | PASS |
+| Delete recovery | Alice created and deleted a disposable upload; delete returned `200` | PASS |
+| Range playback | `Range: bytes=0-99` returned `206` and exactly 100 bytes | PASS |
+| Metadata | Manifest, robots, sitemap, and `og.png` returned `200` | PASS |
+| Sitemap | XML contained public profile entries | PASS |
+| Write boundary | Anonymous `/upload` and `/following` returned `307` to authentication | PASS |
 
-## Two-person acceptance evidence
-
-The durable local fixture was produced through the requested launch journey:
-
-| Journey step | Evidence | Result |
-| :--- | :--- | :--- |
-| First profile | Created `@alice_nova` and persisted profile details | PASS |
-| Streaming upload | Published a 1,128,375-byte MP4 | PASS |
-| Second profile | Created and edited `@bob_meridian` in a separate local identity session | PASS |
-| Like | Bob's persisted like is present on Alice's film | PASS |
-| Comment | Bob's comment persisted with public author attribution | PASS |
-| Creator collection | Alice's public page renders the uploaded film | PASS |
+The durable Alice/Bob fixture still covers profile creation/editing, upload, playback, like, comment, and creator-channel rendering. The disposable delete probe was removed after the test.
 
 ## Production release
 
-| Gate | Evidence | Result |
-| :--- | :--- | :--- |
-| GitHub source | Final release commit pushed to `main` | PASS |
-| GitHub Actions | [`ci.yml`](https://github.com/IamOumarIbrahim/pumblo/actions/workflows/ci.yml) completed for the release commit | PASS |
-| Sites version | Saved and deployed from the same final commit and source archive | PASS |
-| Public deployment | `/`, `/about`, `/api/videos`, `/manifest.webmanifest`, `/robots.txt`, `/sitemap.xml`, and `/og.png` returned `200` | PASS |
-| Production auth boundary | `/api/dev-session` returned `404` and `/upload` redirected anonymous traffic to sign-in | PASS |
+The final commit must be pushed, saved as a Sites version from the same source state, deployed to the public domain, and probed before this section is marked complete.
 
 Production URL: [pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)

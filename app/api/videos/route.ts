@@ -1,11 +1,14 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import {
-  MAX_VIDEO_BYTES,
   createVideo,
   getProfileByEmail,
   listVideos,
   mediaBucket,
 } from "@/db";
+import {
+  MAX_VIDEO_BYTES,
+  MAX_VIDEOS_PER_PROFILE,
+} from "@/app/lib/limits";
 
 const allowedTypes = new Set(["video/mp4", "video/webm"]);
 const allowedModes = new Set([
@@ -28,8 +31,6 @@ const allowedLicenses = new Set([
   "cc-by-nc-4.0",
   "cc0",
 ]);
-const MAX_FILMS_PER_PROFILE = 5;
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const videos = await listVideos({
@@ -38,7 +39,28 @@ export async function GET(request: Request) {
     sort:
       url.searchParams.get("sort") === "newest" ? "newest" : "community",
   });
-  return Response.json({ videos });
+  return Response.json({
+    videos: videos.map((video) => ({
+      id: video.id,
+      title: video.title,
+      description: video.description,
+      generationTool: video.generationTool,
+      generationMode: video.generationMode,
+      category: video.category,
+      license: video.license,
+      prompt: video.prompt,
+      contentType: video.contentType,
+      sizeBytes: video.sizeBytes,
+      provenanceStatus: video.provenanceStatus,
+      views: video.views,
+      createdAt: video.createdAt,
+      ownerHandle: video.ownerHandle,
+      ownerDisplayName: video.ownerDisplayName,
+      ownerAvatarColor: video.ownerAvatarColor,
+      likeCount: video.likeCount,
+      commentCount: video.commentCount,
+    })),
+  });
 }
 
 export async function POST(request: Request) {
@@ -53,10 +75,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const existingVideos = await listVideos({ ownerEmail: user.email, limit: 6 });
-  if (existingVideos.length >= MAX_FILMS_PER_PROFILE) {
+  const existingVideos = await listVideos({
+    ownerEmail: user.email,
+    limit: MAX_VIDEOS_PER_PROFILE + 1,
+  });
+  if (existingVideos.length >= MAX_VIDEOS_PER_PROFILE) {
     return Response.json(
-      { error: "Your five beta upload slots are already in use." },
+      { error: "Your two launch upload slots are already in use. Delete one to publish another." },
       { status: 409 },
     );
   }
@@ -84,7 +109,7 @@ export async function POST(request: Request) {
       contentLength > MAX_VIDEO_BYTES
     ) {
       return Response.json(
-        { error: "Video must be between 1 byte and 90 MB." },
+        { error: "Video must be between 1 byte and 40 MB." },
         { status: 413 },
       );
     }

@@ -1,10 +1,10 @@
 export function GET() {
   return Response.json(
     {
-      name: "Pumblo - Film pages for AI motion creators",
+      name: "Pumblo - The AI-only video platform",
       short_name: "Pumblo",
       description:
-        "Publish an AI film with its tools, workflow, license, creator profile, and feedback attached.",
+        "Watch, upload, search, like, comment, and follow AI video creators.",
       start_url: "/",
       display: "standalone",
       background_color: "#090a0c",
