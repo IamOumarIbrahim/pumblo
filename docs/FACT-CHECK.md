@@ -38,7 +38,7 @@ Next.js documents file/function conventions for metadata, Open Graph images, and
 - [`generateMetadata`](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)
 - [Web app manifest](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest)
 
-Pumblo implements generated route metadata, canonical links, `robots.ts`, `sitemap.ts`, `manifest.ts`, and a checked 1200 × 630 social asset. Tests verify the static contracts; production probes verify the public routes.
+Pumblo implements generated page metadata, canonical links, explicit Vinext routes for the manifest/robots/sitemap endpoints, and a checked 1200 × 630 social asset. Explicit routes are used because production probing showed that the Next.js metadata file conventions were not packaged by the current Vinext/Sites path. Tests verify the source contracts; production probes verify the public endpoints.
 
 ## Dependency security
 

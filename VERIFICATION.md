@@ -10,11 +10,11 @@ Verification performed July 31, 2026 against [`REQUIREMENTS.md`](REQUIREMENTS.md
 | :--- | :--- |
 | ESLint | PASS |
 | TypeScript `tsc --noEmit` | PASS |
-| Node test runner | PASS — 14 tests |
+| Node test runner | PASS — 15 tests |
 | Production dependency audit | PASS — 0 vulnerabilities |
 | Vinext production build | PASS |
 
-The tests cover hosting bindings, removal of the signup cap, storage guards, streamed uploads, the production auth boundary, required routes, audience/value copy, profile/upload friction, canonical sharing, Open Graph dimensions, honest trust language, and the community-order formula.
+The tests cover hosting bindings, removal of the signup cap, storage guards, streamed uploads, the production auth boundary, required routes, audience/value copy, profile/upload friction, canonical sharing, explicit Vinext metadata endpoints, Open Graph dimensions, honest trust language, and the community-order formula.
 
 ## Local runtime smoke test
 

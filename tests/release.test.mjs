@@ -48,9 +48,9 @@ test("the promised two-person journey has server routes", async () => {
     "app/media/[id]/route.ts",
     "app/api/videos/[id]/like/route.ts",
     "app/api/videos/[id]/comments/route.ts",
-    "app/manifest.ts",
-    "app/robots.ts",
-    "app/sitemap.ts",
+    "app/manifest.webmanifest/route.ts",
+    "app/robots.txt/route.ts",
+    "app/sitemap.xml/route.ts",
   ];
   await Promise.all(paths.map((path) => stat(new URL(path, root))));
 });
@@ -79,9 +79,20 @@ test("film pages have canonical metadata and progressive sharing", async () => {
   const watch = await text("app/watch/[id]/page.tsx");
   const engagement = await text("app/components/Engagement.tsx");
   assert.match(layout, /url: "\/og\.png"/);
+  assert.match(layout, /manifest: "\/manifest\.webmanifest"/);
   assert.match(watch, /alternates: \{ canonical: `\/watch\/\$\{video\.id\}` \}/);
   assert.match(engagement, /navigator\.share/);
   assert.match(engagement, /navigator\.clipboard\.writeText/);
+});
+
+test("metadata endpoints are explicit Vinext routes, not build-time conventions", async () => {
+  const manifest = await text("app/manifest.webmanifest/route.ts");
+  const robots = await text("app/robots.txt/route.ts");
+  const sitemap = await text("app/sitemap.xml/route.ts");
+  assert.match(manifest, /application\/manifest\+json/);
+  assert.match(robots, /Sitemap: \$\{base\}\/sitemap\.xml/);
+  assert.match(sitemap, /application\/xml/);
+  assert.match(sitemap, /listVideos\(\{ sort: "newest", limit: 100 \}\)/);
 });
 
 test("the social preview is exactly 1200 by 630", async () => {
