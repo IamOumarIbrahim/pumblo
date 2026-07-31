@@ -1,40 +1,56 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import Link from "next/link";
 import { Header } from "@/app/components/Header";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    "https://pumblo-ai-video.oumaribrahim123.chatgpt.site",
-  ),
-  title: {
-    default: "Pumblo - The home of AI video",
-    template: "%s | Pumblo",
-  },
-  description:
-    "Discover and share AI-generated films from accountable human creators.",
-  openGraph: {
-    type: "website",
-    siteName: "Pumblo",
-    title: "Pumblo - The home of AI video",
+const productionUrl =
+  "https://pumblo-ai-video.oumaribrahim123.chatgpt.site";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const forwardedHost = requestHeaders.get("x-forwarded-host");
+  const host = forwardedHost || requestHeaders.get("host");
+  const protocol =
+    requestHeaders.get("x-forwarded-proto") ||
+    (host?.startsWith("localhost") ? "http" : "https");
+  const metadataBase = safeBase(protocol, host);
+
+  return {
+    metadataBase,
+    title: {
+      default: "Pumblo - Film pages for AI motion creators",
+      template: "%s | Pumblo",
+    },
     description:
-      "Every video AI-generated. Every creator human-accountable.",
-    images: [
-      {
-        url: "/pumblo-social.png",
-        width: 1200,
-        height: 630,
-        alt: "Pumblo - The home of AI video",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Pumblo - The home of AI video",
-    description:
-      "Every video AI-generated. Every creator human-accountable.",
-    images: ["/pumblo-social.png"],
-  },
-};
+      "Publish an AI film with its tools, workflow, license, creator profile, and feedback attached.",
+    applicationName: "Pumblo",
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      url: "/",
+      siteName: "Pumblo",
+      title: "Give the clip a home. Keep the process.",
+      description:
+        "Shareable film pages for AI motion creators, with the process and feedback attached.",
+      images: [
+        {
+          url: "/og.png",
+          width: 1200,
+          height: 630,
+          alt: "Pumblo - Give the clip a home. Keep the process.",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Give the clip a home. Keep the process.",
+      description:
+        "Shareable film pages for AI motion creators, with the process and feedback attached.",
+      images: ["/og.png"],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   colorScheme: "dark",
@@ -55,14 +71,19 @@ export default function RootLayout({
               <span className="brand-mark">P</span>
               <span>Pumblo</span>
             </span>
-            <p>AI-made stories. Human-made reputations.</p>
+            <p>Film pages for AI motion creators.</p>
           </div>
           <div className="footer-links">
-            <a href="https://github.com/IamOumarIbrahim/pumblo">
-              Open source
+            <Link href="/#how-it-works">How it works</Link>
+            <Link href="/about">Product philosophy</Link>
+            <a
+              href="https://github.com/IamOumarIbrahim/pumblo"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Star on GitHub ↗
             </a>
-            <LinkLike href="/about">Trust & safety</LinkLike>
-            <span>Closed beta · 10 creators</span>
+            <span>Open beta · no follower minimum</span>
           </div>
         </footer>
       </body>
@@ -70,12 +91,14 @@ export default function RootLayout({
   );
 }
 
-function LinkLike({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return <a href={href}>{children}</a>;
+function safeBase(protocol: string, host: string | null): URL {
+  if (
+    host &&
+    (host.startsWith("localhost") ||
+      host.startsWith("127.0.0.1") ||
+      host.endsWith(".chatgpt.site"))
+  ) {
+    return new URL(`${protocol}://${host}`);
+  }
+  return new URL(productionUrl);
 }

@@ -1,13 +1,13 @@
 # Trust, Safety, and Content Policy
 
-This release is a small, invited beta rather than an unmoderated public platform.
+Pumblo is an open beta for finished motion work in which AI materially contributed.
 
-- Uploads must be AI-generated MP4/WebM renders. Camera footage is out of scope.
-- The uploader must affirm the AI-content rule before publishing.
-- Current provenance is creator-supplied and shown as `self-declared`.
-- Pumblo does not yet inspect C2PA manifests or claim cryptographic provenance.
+- The uploader must affirm AI contribution, publishing rights, and the accuracy of supplied process details.
+- Current process/provenance information is creator-supplied and visibly labeled `creator-declared`.
+- Pumblo does not inspect C2PA manifests, perform media forensics, verify human authorship, or grade artistic quality.
 - Production write actions require a ChatGPT-authenticated person with a Pumblo profile.
-- The service accepts only 10 profiles and five films per profile.
+- Public viewing does not require authentication.
+- Each creator is limited to five films; each MP4/WebM source is limited to 90 MB.
 - Illegal, exploitative, non-consensual, impersonating, or rights-infringing media must not be uploaded.
 
-Before expanding beyond the invited beta, add a report/appeal flow, media moderation, abuse rate limits, consent handling, and a documented incident-response process.
+The application does not yet include reporting, removal appeals, media moderation, abuse rate limits, consent handling, or incident response. Those controls are release blockers before promotion to a large, untrusted public community.

@@ -14,7 +14,7 @@ export function VideoCard({ video }: { video: Video }) {
           playsInline
           aria-label={`Preview of ${video.title}`}
         />
-        <span className="quality-pill">{video.sqsScore} SQS</span>
+        <span className="tool-pill">{video.generationTool}</span>
         <span className="play-disc" aria-hidden="true">
           ▶
         </span>
@@ -33,12 +33,10 @@ export function VideoCard({ video }: { video: Video }) {
           </Link>
           <Link className="creator-name" href={`/profile/${video.ownerHandle}`}>
             {video.ownerDisplayName}
-            <span className="verified-dot" title="Human signed in">
-              ✓
-            </span>
           </Link>
           <p className="video-meta">
-            {compactNumber(video.views)} views · {relativeTime(video.createdAt)}
+            {compactNumber(video.views)} views · {compactNumber(video.likeCount)}{" "}
+            likes · {relativeTime(video.createdAt)}
           </p>
         </div>
       </div>

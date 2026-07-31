@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  chatGPTSignInPath,
   chatGPTSignOutPath,
   getChatGPTUser,
 } from "@/app/chatgpt-auth";
@@ -24,19 +23,19 @@ export async function Header() {
           <input
             name="q"
             type="search"
-            placeholder="Search AI films, tools, creators"
+            placeholder="Search films, creators, tools"
             aria-label="Search Pumblo"
           />
         </form>
 
         <nav className="header-actions" aria-label="Primary navigation">
-          <Link className="nav-link desktop-only" href="/?sort=newest">
-            Newest
+          <Link className="nav-link desktop-only" href="/#how-it-works">
+            How it works
           </Link>
           {user ? (
             <>
               <Link className="button button-primary" href="/upload">
-                <span aria-hidden="true">＋</span> Upload
+                <span aria-hidden="true">＋</span> New film
               </Link>
               <Link
                 className="profile-chip"
@@ -59,8 +58,8 @@ export async function Header() {
               </Link>
             </>
           ) : (
-            <Link className="button button-primary" href={chatGPTSignInPath("/")}>
-              Join beta
+            <Link className="button button-primary" href="/upload">
+              Publish a film
             </Link>
           )}
         </nav>

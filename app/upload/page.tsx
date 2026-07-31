@@ -18,16 +18,16 @@ export default async function UploadPage() {
       <div className="upload-heading">
         <div>
           <span className="section-kicker">Upload studio</span>
-          <h1>Put the work on screen.</h1>
+          <h1>Turn a render into a page worth sharing.</h1>
           <p>
-            Upload a browser-ready render, disclose how it was made, and
-            publish it to Discovery.
+            Add the context that gets lost in a file attachment: tool,
+            workflow, license, and optional process notes.
           </p>
         </div>
         <div className="quota-card">
-          <span>Beta allowance</span>
-          <strong>{remaining} of 5 uploads remaining</strong>
-          <small>90 MB maximum per film</small>
+          <span>Creator allowance</span>
+          <strong>{remaining} of 5 film pages available</strong>
+          <small>MP4 or WebM · 90 MB maximum</small>
         </div>
       </div>
       {remaining > 0 ? (
@@ -36,8 +36,8 @@ export default async function UploadPage() {
         <div className="empty-state">
           <h3>Your beta upload allowance is full</h3>
           <p>
-            Each creator receives five upload slots while Pumblo remains on
-            no-card infrastructure.
+            Each creator has five film pages during the open beta so storage
+            stays predictable.
           </p>
         </div>
       )}

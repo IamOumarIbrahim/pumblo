@@ -1,29 +1,30 @@
 <div align="center">
   <h1>🎬 Pumblo</h1>
-  <p><strong>The human-accountable home for AI-generated video.</strong></p>
+  <p><strong>Give the clip a home. Keep the process.</strong></p>
+  <p>Shareable film pages for AI motion creators—with the tools, workflow, license, creator profile, and feedback attached.</p>
 
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg?style=flat-square)](LICENSE)
   [![CI](https://github.com/IamOumarIbrahim/pumblo/actions/workflows/ci.yml/badge.svg)](https://github.com/IamOumarIbrahim/pumblo/actions/workflows/ci.yml)
   <br />
   [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg?style=flat-square&logo=next.js)](https://nextjs.org/)
-  [![Vinext](https://img.shields.io/badge/runtime-Vinext-b8ff3d.svg?style=flat-square)](https://github.com/cloudflare/vinext)
-  [![No card](https://img.shields.io/badge/setup-no%20card-b8ff3d.svg?style=flat-square)](#-setup--installation)
+  [![Vinext](https://img.shields.io/badge/runtime-Vinext-C7FF2F.svg?style=flat-square)](https://github.com/cloudflare/vinext)
+  [![No card](https://img.shields.io/badge/setup-no%20card-C7FF2F.svg?style=flat-square)](#-setup--installation)
   <br />
-  **[Open the live beta](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)**
+  <strong><a href="https://pumblo-ai-video.oumaribrahim123.chatgpt.site">Open the live app</a></strong>
 </div>
 
 <p align="center">
-  <img src="public/pumblo-social.png" alt="Pumblo - The home of AI video" width="100%" />
+  <img src="public/og.png" alt="Pumblo—Give the clip a home. Keep the process." width="100%" />
 </p>
 
 > [!IMPORTANT]
-> **No card setup**: local development and the configured Sites deployment require no database account, storage account, API key, or payment card. Production identity, D1 records, and R2 video storage are managed by the hosting platform.
+> **No card setup.** Local development needs no API key or hosted database account. The configured Sites deployment supplies production authentication plus managed D1 and R2 bindings.
 
-Pumblo is a working small-beta video community for finished AI-generated films. People sign in with ChatGPT, create a public creator profile, upload an MP4 or WebM, watch creator channels, and save likes and comments. The release deliberately caps itself at 10 profiles and five videos per profile so its first community fits inside the managed free-tier footprint.
+Pumblo is for AI filmmakers, animators, music-visual creators, and small studios who already have a finished clip but need a link worth sharing. It turns that render into a public film page and keeps its creative recipe beside it. Viewers can watch without an account; creators only sign in when they want to publish, like, or comment.
 
-```bash
-# Quickstart - Windows PowerShell
+```powershell
+# Quickstart—Windows PowerShell
 git clone https://github.com/IamOumarIbrahim/pumblo.git
 cd pumblo
 .\scripts\setup.ps1
@@ -32,11 +33,12 @@ npm run dev
 
 ## 📖 Table of Contents
 
-- [What is Pumblo?](#-what-is-pumblo)
+- [Why Pumblo?](#-why-pumblo)
 - [Key Features](#-key-features)
 - [System Architecture](#️-system-architecture)
 - [Setup & Installation](#-setup--installation)
 - [How to Use](#️-how-to-use)
+- [Product Gates](#-product-gates)
 - [Runtime Reference](#-runtime-reference)
 - [Scope & Limitations](#-scope--limitations)
 - [File Structure](#-file-structure)
@@ -46,34 +48,35 @@ npm run dev
 
 ---
 
-## 💡 What is Pumblo?
+## 💡 Why Pumblo?
 
-General video platforms treat AI media as one content label among many. Pumblo makes the creation process part of every film page: generation tool, mode, category, license, optional prompt notes, and an explicit provenance state.
+A raw file has no context. A general social post quickly separates the clip from its workflow, usage rights, and useful feedback. Pumblo gives each film a permanent, watchable page with:
 
-Instead of requiring a stack of separately billed services, Pumblo uses one edge deployment:
+- **A cross-tool process card**: name any model, tool, ComfyUI graph, or hybrid pipeline.
+- **A creator page**: one public profile collects the work without requiring a follower base.
+- **A feedback address**: likes and comments stay attached to the film's canonical link.
+- **Honest disclosure**: process details are creator-declared, never presented as forensic proof.
 
-- **Accountability**: production writes require Sign in with ChatGPT, while public viewing remains open.
-- **Durability**: profiles, film metadata, likes, comments, and view counts live in D1.
-- **Playback**: video bytes live in R2 and support HTTP byte-range requests.
-- **Honest provenance**: this beta labels uploads as `self-declared`; it does not pretend to perform C2PA verification.
+The first upload must be useful before a feed has an audience. That cold-start rule is the product strategy, not just launch copy.
 
 ---
 
 ## ✨ Key Features
 
-- 👤 **Creator profiles**: unique handle, display name, bio, location, website, and profile color.
-- ⬆️ **Streaming uploads**: MP4 or WebM files up to 90 MB stream directly into R2 without multipart buffering.
-- ▶️ **Real playback**: watch pages support browser seeking through `206 Partial Content` responses.
-- 💬 **Community actions**: one persisted like per person/video plus 500-character comments.
-- 🔎 **Discovery**: search by title, description, or generation tool; filter by category; sort by newest or the beta quality score.
-- 🔐 **Private identity**: public profiles never expose the email supplied by the hosting authentication layer.
-- 🧪 **Safe local testing**: a development-only identity route makes two-user acceptance testing possible without credentials.
+- 👤 **Fast creator setup**: handle and display name are the only required profile fields; a handle is suggested automatically.
+- ⬆️ **Streaming uploads**: browser-ready MP4/WebM files up to 90 MB stream into R2 without multipart buffering.
+- ▶️ **Seekable playback**: `/media/:id` supports HTTP range responses.
+- 🧰 **Tool-neutral process notes**: free-text tool input, five workflow modes, license selection, and optional prompt/process notes.
+- 🔗 **Share-ready pages**: canonical metadata, Open Graph artwork, native sharing with clipboard fallback, sitemap, and robots rules.
+- 💬 **Community actions**: one persisted like per person/video and comments up to 500 characters.
+- 🔎 **Transparent discovery**: search, category filters, newest order, or a documented community-signal order.
+- 🔐 **Private identity**: the authenticated email is never rendered on public profile or film pages.
 
 ---
 
 ## ⚙️ System Architecture
 
-The browser talks to a single Vinext worker; the hosting platform injects identity and provisions both durable bindings.
+The browser talks to one edge worker. The hosting platform supplies identity and durable bindings.
 
 ```mermaid
 flowchart LR
@@ -81,12 +84,14 @@ flowchart LR
     A["Sign in with ChatGPT"] --> W
     W --> D["D1: profiles, films, likes, comments"]
     W --> R["R2: MP4 / WebM objects"]
-    W --> M["Range-aware /media route"]
+    W --> M["Range-aware media route"]
     M --> B
 ```
 
 > [!NOTE]
-> **Why the raw upload body?** The film is sent as the request body and its validated metadata travels in a bounded header. This lets the worker stream bytes into R2 instead of holding a large multipart file in memory.
+> **Why the raw upload body?** Validated metadata travels in a bounded request header while the video body streams to object storage. The worker does not first buffer a multipart video.
+
+See [`docs/architecture.md`](docs/architecture.md) for the trust boundary and data path.
 
 ---
 
@@ -107,7 +112,7 @@ chmod +x scripts/setup.sh
 ./scripts/setup.sh
 ```
 
-The script verifies Node.js, installs the exact lockfile, runs linting and type checks, executes release tests, and produces a deployment build.
+Both scripts check Node.js, install the lockfile, run every release gate, and create a production build.
 
 ### Option B: Manual installation
 
@@ -119,67 +124,81 @@ npm run verify
 npm run dev
 ```
 
-No `.env` values are required. Vinext creates local D1 and R2 data under `.wrangler/`.
+No `.env` file is required. Local D1/R2 state is kept under this repository's `.wrangler/` directory.
 
-🔍 **Verification command**:
+🔍 **Verification command**
 
 ```bash
 npm run verify
 ```
 
-Expected result: ESLint, TypeScript, seven release tests, and the Vinext production build all complete successfully.
+Expected result: ESLint, TypeScript, release-contract tests, ranking unit tests, the production dependency audit, and the Vinext production build all pass.
 
 ### Production deployment
 
-The checked-in [`.openai/hosting.json`](.openai/hosting.json) is already bound to the Pumblo Sites project and declares:
+The checked-in [`.openai/hosting.json`](.openai/hosting.json) is already associated with the Pumblo Sites project and declares D1 as `DB` and R2 as `MEDIA`. Deploy through Codex Sites; no registrar, database, storage, OAuth-app, or payment-card setup is part of this path.
 
-```json
-{
-  "d1": "DB",
-  "r2": "MEDIA"
-}
-```
-
-Deploy through Codex Sites. It provisions the managed bindings, runs the included Drizzle migrations, enables Sign in with ChatGPT, and serves the saved version at the edge. There is no registrar, database, storage, email, OAuth, or payment-card setup in this path.
-
-Current production deployment: **[pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)**
+Current production app: **[pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-video.oumaribrahim123.chatgpt.site)**
 
 ---
 
 ## 🖥️ How to Use
 
-### Production
+1. Browse films without signing in.
+2. Choose **Create a film page** and authenticate with ChatGPT.
+3. Accept the suggested handle or change it; optional profile fields can wait.
+4. Upload a browser-ready MP4/WebM and add its tool, workflow, license, and optional process notes.
+5. Share the watch page. Viewers need an account only to like or comment.
 
-1. Open Pumblo and browse without signing in.
-2. Choose **Sign in** and authenticate with a ChatGPT account.
-3. Create a public Pumblo profile.
-4. Open **Upload**, choose an MP4/WebM, complete the AI disclosure, and publish.
-5. Use a second ChatGPT account to simulate another person, then watch, like, comment, and edit that second profile.
-
-### Local two-user acceptance test
-
-Start the app, then visit these development-only URLs:
+For a local two-person acceptance test, start the app and switch identities with:
 
 ```text
 http://localhost:3000/api/dev-session?email=alice@example.test
 http://localhost:3000/api/dev-session?email=bob@example.test
 ```
 
-Each URL switches the local test identity and redirects to profile setup. The route returns `404` in production builds.
+The helper route returns `404` outside development.
+
+---
+
+## 🚪 Product Gates
+
+Every market-facing change must survive one blunt question: **“Bro, who's even gonna use this?”**
+
+| Gate | Shipping test |
+| :--- | :--- |
+| Named audience | Can we name a creator and the moment they need Pumblo? |
+| Single-player value | Is the first film page useful with zero followers? |
+| Low friction | Can a viewer watch without an account and a creator publish without third-party setup? |
+| Honest trust | Are claims limited to what the system actually observes? |
+| Distribution | Does every film produce a canonical, shareable link? |
+| Evidence | Do code tests enforce the promise and does the production smoke test pass? |
+
+The full pass/fail rubric is in [`docs/PRODUCT-GATES.md`](docs/PRODUCT-GATES.md). Checked claims and source links are in [`docs/FACT-CHECK.md`](docs/FACT-CHECK.md).
+
+### Community order
+
+Discovery uses visible community activity instead of a fabricated quality grade:
+
+```text
+community points = 6 × likes + 4 × comments + 0.05 × min(views, 500)
+```
+
+Newest publication time breaks ties. This is a discovery heuristic, not a judgment of artistic quality.
 
 ---
 
 ## 📊 Runtime Reference
 
-| Resource | Binding / limit | Purpose |
+| Resource | Limit / behavior | Purpose |
 | :--- | :--- | :--- |
-| Profiles | 10 total | Keeps the beta inside its intended first-user footprint |
-| Videos | 5 per profile | Prevents one creator from consuming the full storage pool |
-| Video file | MP4 or WebM, 90 MB max | Browser-ready source stored without transcoding |
+| Profiles | No application-level signup cap | Removes an artificial growth barrier |
+| Films | 5 per creator | Conservative storage guard |
+| Film file | MP4 or WebM, 90 MB maximum | Browser-ready source; no transcoding |
 | Database | D1 binding `DB` | Profiles, metadata, likes, comments, views |
-| Media | R2 binding `MEDIA` | Durable video objects and range reads |
-| Authentication | Sign in with ChatGPT | Production write identity |
-| Provenance | `self-declared` | Creator disclosure; no cryptographic verification yet |
+| Media | R2 binding `MEDIA` | Durable objects and range reads |
+| Authentication | Sign in with ChatGPT | Required for writes, never for viewing |
+| Process status | `creator-declared` in the UI | Disclosure, not cryptographic verification |
 
 Public HTTP endpoints are documented in [`docs/api.md`](docs/api.md).
 
@@ -187,12 +206,14 @@ Public HTTP endpoints are documented in [`docs/api.md`](docs/api.md).
 
 ## 🔬 Scope & Limitations
 
-- **No uptime SLA**: the deployment has no sleeping application process, but availability remains subject to the hosting service and its free-tier policies.
-- **Small beta by design**: the app stops accepting new profiles after 10. It is not configured for an unrestricted public launch.
-- **No transcoding**: upload browser-ready H.264 MP4 or WebM files. Pumblo serves the original object.
-- **No cryptographic provenance yet**: uploads are visibly marked `self-declared`; C2PA validation is future work.
-- **No automated moderation pipeline**: the disclosure policy is enforced in the UI, not by media forensics. Do not use this beta for an untrusted open signup.
-- **One identity provider**: production profile creation and writes require a ChatGPT account.
+- **No uptime SLA**: availability and quotas remain subject to the hosting service.
+- **No transcoding or thumbnails**: upload a browser-compatible H.264 MP4 or WebM; the original object is served.
+- **No cryptographic provenance**: Pumblo does not validate C2PA Content Credentials or prove where pixels came from.
+- **No automated moderation pipeline**: the current policy and authenticated writes are not enough for a large untrusted launch.
+- **No creator analytics yet**: view, like, and comment counts are public, but there is no private dashboard.
+- **One production identity provider**: writes currently require a ChatGPT account.
+
+The first-ten-user target is a launch capacity goal, not a signup wall or a promise of permanent free hosting.
 
 ---
 
@@ -200,40 +221,39 @@ Public HTTP endpoints are documented in [`docs/api.md`](docs/api.md).
 
 ```text
 pumblo/
-├── .openai/hosting.json       - Sites project plus D1/R2 declarations
-├── app/                       - Pages, components, auth adapter, and API routes
-│   ├── api/                   - Profile, video, like, and comment writes
-│   ├── media/[id]/            - Range-aware video delivery
-│   ├── profile/[handle]/      - Public creator channels
-│   ├── settings/profile/      - Create and edit a profile
-│   ├── upload/                - Upload Studio
-│   └── watch/[id]/            - Film player and conversation
-├── db/                        - D1 schema and typed persistence functions
-├── drizzle/                   - Production database migrations
-├── public/                    - Static social-preview asset
+├── .openai/hosting.json       - Sites project and D1/R2 declarations
+├── app/                       - UI, metadata, authentication, and HTTP routes
+│   ├── api/                   - Profile, film, like, and comment writes
+│   ├── media/[id]/            - Range-aware film delivery
+│   ├── profile/[handle]/      - Public creator pages
+│   ├── upload/                - Publishing flow
+│   └── watch/[id]/            - Film, process, sharing, and conversation
+├── db/                        - D1 schema and persistence functions
+├── docs/                      - Architecture, facts, gates, API, and policy
+├── drizzle/                   - Packaged database migrations
+├── public/og.png              - 1200 × 630 social card
 ├── scripts/                   - Automated Windows and POSIX setup
-├── tests/                     - Release-contract tests
-├── worker/                    - Vinext worker entrypoint
-└── vite.config.ts             - Local and production binding configuration
+├── tests/                     - Product contracts and ranking unit tests
+└── worker/                    - Vinext worker entry point
 ```
 
 ---
 
 ## 🩹 Troubleshooting
 
-| Issue | Root Cause | Resolution |
+| Issue | Root cause | Resolution |
 | :--- | :--- | :--- |
-| `Node.js 22.13.0 or newer` | The runtime is too old | Install current Node.js 22 LTS or newer, then rerun setup |
-| Port 3000 is occupied | Another local app is listening | Run `npm run dev -- --port 3001` and use that printed URL |
-| Upload rejected | Wrong format, over 90 MB, or profile missing | Create a profile; export H.264 MP4/WebM below 90 MB |
-| Production asks for sign-in | The action writes data | Complete Sign in with ChatGPT, then return to the action |
-| Local data needs a clean slate | Miniflare persists under `.wrangler/` | Stop the dev server and remove only this repo's `.wrangler/` directory |
+| Node version error | Runtime is older than 22.13 | Install current Node.js 22 LTS or newer and rerun setup |
+| Port 3000 is occupied | Another local app is listening | Run `npm run dev -- --port 3001` |
+| Upload is rejected | Missing profile, wrong format, or over 90 MB | Create a profile and export browser-ready MP4/WebM below the limit |
+| Production asks for sign-in | The action changes data | Authenticate, then return to the action |
+| Local state should be reset | Miniflare persists data | Stop the server and remove only this repo's `.wrangler/` directory |
 
 ---
 
 ## 🧩 Contributing
 
-Run `npm run verify` before opening a pull request. The most useful next contributions are media moderation, thumbnail generation, C2PA verification with an explicit trust policy, and automated browser acceptance tests.
+Run `npm run verify` before opening a pull request. Useful next contributions include report/appeal workflows, thumbnail generation, creator analytics, accessible player controls, and C2PA inspection with an explicit trust policy.
 
 ---
 
@@ -247,6 +267,6 @@ AGPL-3.0-only © 2026 [Oumar Ibrahim](https://github.com/IamOumarIbrahim)
 
 <div align="center">
 
-If Pumblo gives AI filmmakers a more honest home, a ⭐ helps other people find it.
+If Pumblo gives your AI film a better home, a ⭐ helps the next creator find it.
 
 </div>

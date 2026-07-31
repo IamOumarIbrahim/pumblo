@@ -13,6 +13,7 @@ const allowedModes = new Set([
   "image-to-video",
   "video-to-video",
   "audio-to-video",
+  "hybrid-workflow",
 ]);
 const allowedCategories = new Set([
   "film",
@@ -27,13 +28,15 @@ const allowedLicenses = new Set([
   "cc-by-nc-4.0",
   "cc0",
 ]);
+const MAX_FILMS_PER_PROFILE = 5;
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const videos = await listVideos({
     query: url.searchParams.get("q")?.slice(0, 80) || undefined,
     category: url.searchParams.get("category") || undefined,
-    sort: url.searchParams.get("sort") === "newest" ? "newest" : "sqs",
+    sort:
+      url.searchParams.get("sort") === "newest" ? "newest" : "community",
   });
   return Response.json({ videos });
 }
@@ -51,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const existingVideos = await listVideos({ ownerEmail: user.email, limit: 6 });
-  if (existingVideos.length >= 5) {
+  if (existingVideos.length >= MAX_FILMS_PER_PROFILE) {
     return Response.json(
       { error: "Your five beta upload slots are already in use." },
       { status: 409 },
@@ -138,8 +141,6 @@ export async function POST(request: Request) {
       if (storedObject.size !== declaredSize) {
         throw new Error("The stored video size did not match the upload.");
       }
-      const completedFields = [description, prompt].filter(Boolean).length;
-      const sqsScore = Math.min(92, 72 + completedFields * 5);
       const video = await createVideo({
         id,
         ownerEmail: user.email,
@@ -154,7 +155,6 @@ export async function POST(request: Request) {
         contentType,
         sizeBytes: storedObject.size,
         provenanceStatus: "self-declared",
-        sqsScore,
       });
       return Response.json({ video }, { status: 201 });
     } catch (error) {

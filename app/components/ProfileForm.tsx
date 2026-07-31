@@ -31,7 +31,7 @@ export function ProfileForm({
 }) {
   const [form, setForm] = useState<ProfileDraft>(
     initial ?? {
-      handle: "",
+      handle: suggestedHandle(suggestedName),
       displayName: suggestedName,
       bio: "",
       location: "",
@@ -111,7 +111,9 @@ export function ProfileForm({
       </div>
 
       <label>
-        <span>Bio</span>
+        <span>
+          Bio <i>optional</i>
+        </span>
         <textarea
           maxLength={280}
           rows={4}
@@ -124,7 +126,7 @@ export function ProfileForm({
 
       <div className="form-split">
         <label>
-          <span>Location</span>
+          <span>Location <i>optional</i></span>
           <input
             maxLength={60}
             value={form.location}
@@ -133,7 +135,7 @@ export function ProfileForm({
           />
         </label>
         <label>
-          <span>Website</span>
+          <span>Website <i>optional</i></span>
           <input
             maxLength={160}
             value={form.website}
@@ -164,13 +166,27 @@ export function ProfileForm({
 
       <div className="form-actions">
         <button className="button button-primary button-large" disabled={saving}>
-          {saving ? "Saving…" : initial ? "Save changes" : "Create my profile"}
+          {saving
+            ? "Saving…"
+            : initial
+              ? "Save changes"
+              : "Open my creator page"}
         </button>
         <p>
-          Your sign-in email stays private. Only your public Pumblo profile is
-          shown.
+          Takes about 30 seconds. Your sign-in email is never shown publicly.
         </p>
       </div>
     </form>
   );
+}
+
+function suggestedHandle(name: string): string {
+  const value = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 24);
+  return value.length >= 3 ? value : "";
 }

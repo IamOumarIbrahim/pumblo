@@ -19,7 +19,15 @@ export async function generateMetadata({
   return {
     title: `@${profile.handle}`,
     description:
-      profile.bio || `Watch AI-generated films by ${profile.displayName}.`,
+      profile.bio || `Watch AI motion work by ${profile.displayName}.`,
+    alternates: { canonical: `/profile/${profile.handle}` },
+    openGraph: {
+      title: `${profile.displayName} on Pumblo`,
+      description:
+        profile.bio || `Film pages and process notes by @${profile.handle}.`,
+      url: `/profile/${profile.handle}`,
+      type: "profile",
+    },
   };
 }
 
@@ -46,7 +54,7 @@ export default async function ProfilePage({
           background: `linear-gradient(120deg, ${profile.avatarColor} 0%, #15171b 48%, #0a0b0d 100%)`,
         }}
       >
-        <span>PUMBLO / CREATOR</span>
+        <span>PUMBLO / AI MOTION CREATOR</span>
       </section>
       <section className="profile-intro">
         <Avatar
@@ -73,7 +81,7 @@ export default async function ProfilePage({
             <span>
               <b>{videos.length}</b> {videos.length === 1 ? "film" : "films"}
             </span>
-            <span className="human-badge">✓ Human signed in</span>
+            <span className="human-badge">Creator profile</span>
             {profile.location ? <span>{profile.location}</span> : null}
             {profile.website ? (
               <a href={profile.website} rel="noreferrer" target="_blank">
@@ -107,12 +115,12 @@ export default async function ProfilePage({
             <h3>No films yet</h3>
             <p>
               {isOwner
-                ? "Your channel is ready. Publish your first AI-generated video."
+                ? "Your creator page is ready. Add one film and you already have a link worth sharing."
                 : "This creator has not published a film yet."}
             </p>
             {isOwner ? (
               <Link className="button button-primary" href="/upload">
-                Upload a video
+                Publish a film
               </Link>
             ) : null}
           </div>

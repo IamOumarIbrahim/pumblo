@@ -19,13 +19,15 @@ export default async function ProfileSettingsPage({
     <main className="form-page">
       <div className="form-page-heading">
         <span className="section-kicker">
-          {profile ? "Channel settings" : "One last step"}
+          {profile ? "Creator settings" : "30-second setup"}
         </span>
-        <h1>{profile ? "Shape your public profile." : "Create your Pumblo profile."}</h1>
+        <h1>
+          {profile ? "Keep your creator page current." : "Claim your creator page."}
+        </h1>
         <p>
           {profile
-            ? "Update the details viewers see when they visit your channel."
-            : "Choose how you will appear beside your films, likes, and comments."}
+            ? "Update the public details attached to every film you publish."
+            : "A display name and handle are all you need. Everything else is optional."}
         </p>
       </div>
       <ProfileForm

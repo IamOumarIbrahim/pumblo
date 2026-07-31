@@ -144,6 +144,14 @@ export function UploadForm() {
         ) : null}
       </div>
 
+      <div className="upload-recipe" aria-label="Upload checklist">
+        <span>Before you publish</span>
+        <p>
+          Use a browser-ready H.264 MP4 or WebM, keep it below 90 MB, and make
+          sure you have the right to share every element.
+        </p>
+      </div>
+
       <div className="upload-fields">
         <label className="full-field">
           <span>Title</span>
@@ -167,18 +175,22 @@ export function UploadForm() {
 
         <label>
           <span>Generation tool</span>
-          <select required name="generationTool" defaultValue="">
-            <option value="" disabled>
-              Choose a tool
-            </option>
-            <option value="Sora">Sora</option>
-            <option value="Veo">Veo</option>
-            <option value="Runway">Runway</option>
-            <option value="Kling">Kling</option>
-            <option value="Pika">Pika</option>
-            <option value="Luma">Luma</option>
-            <option value="Other">Other / custom</option>
-          </select>
+          <input
+            required
+            name="generationTool"
+            maxLength={50}
+            list="generation-tools"
+            placeholder="Runway, Veo, Kling, ComfyUI…"
+          />
+          <datalist id="generation-tools">
+            <option value="Runway" />
+            <option value="Veo" />
+            <option value="Kling" />
+            <option value="Pika" />
+            <option value="Luma" />
+            <option value="ComfyUI" />
+          </datalist>
+          <small>Type any model, tool, or custom pipeline.</small>
         </label>
         <label>
           <span>Generation mode</span>
@@ -187,6 +199,7 @@ export function UploadForm() {
             <option value="image-to-video">Image to video</option>
             <option value="video-to-video">Video to video</option>
             <option value="audio-to-video">Audio to video</option>
+            <option value="hybrid-workflow">Hybrid workflow</option>
           </select>
         </label>
         <label>
@@ -223,8 +236,8 @@ export function UploadForm() {
       <label className="policy-check">
         <input required type="checkbox" name="aiDeclaration" value="yes" />
         <span>
-          I confirm this video is AI-generated, does not contain prohibited
-          camera footage, and follows Pumblo’s trust and safety policy.
+          I confirm AI was a material part of this film’s production, I have the
+          right to publish it, and the process details above are accurate.
         </span>
       </label>
 
@@ -253,8 +266,8 @@ export function UploadForm() {
           {phase === "idle" ? "Publish film" : "Publishing…"}
         </button>
         <p>
-          Beta uploads publish immediately and are labeled “self-declared”
-          until cryptographic provenance verification ships.
+          Film pages are public immediately. Process information is clearly
+          labeled creator-declared.
         </p>
       </div>
     </form>

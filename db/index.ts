@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
+import { COMMUNITY_ORDER_SQL } from "@/app/lib/community-ranking";
 
-export const MAX_PROFILES = 10;
 export const MAX_VIDEO_BYTES = 90 * 1024 * 1024;
 
 type RuntimeBindings = {
@@ -34,7 +34,6 @@ export type Video = {
   contentType: string;
   sizeBytes: number;
   provenanceStatus: string;
-  sqsScore: number;
   views: number;
   createdAt: string;
   ownerHandle: string;
@@ -203,15 +202,6 @@ export async function saveProfile(input: {
   const email = input.email.toLowerCase();
   const existing = await getProfileByEmail(email);
 
-  if (!existing) {
-    const count = await db
-      .prepare("SELECT COUNT(*) AS count FROM profiles")
-      .first<{ count: number }>();
-    if ((count?.count ?? 0) >= MAX_PROFILES) {
-      throw new Error("The 10-person beta is currently full.");
-    }
-  }
-
   const collision = await db
     .prepare("SELECT email FROM profiles WHERE handle = ?1 AND email <> ?2")
     .bind(input.handle, email)
@@ -264,7 +254,6 @@ const videoSelect = `
     v.content_type AS contentType,
     v.size_bytes AS sizeBytes,
     v.provenance_status AS provenanceStatus,
-    v.sqs_score AS sqsScore,
     v.views,
     v.created_at AS createdAt,
     p.handle AS ownerHandle,
@@ -280,7 +269,7 @@ export async function listVideos(options?: {
   ownerEmail?: string;
   query?: string;
   category?: string;
-  sort?: "newest" | "sqs";
+  sort?: "newest" | "community";
   limit?: number;
 }): Promise<Video[]> {
   await ensureSchema();
@@ -303,9 +292,7 @@ export async function listVideos(options?: {
   }
 
   const order =
-    options?.sort === "sqs"
-      ? "v.sqs_score DESC, v.created_at DESC"
-      : "v.created_at DESC";
+    options?.sort === "newest" ? "v.created_at DESC" : COMMUNITY_ORDER_SQL;
   values.push(Math.min(options?.limit ?? 48, 100));
   const sql = `${videoSelect}
     ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
@@ -340,7 +327,6 @@ export async function createVideo(input: {
   contentType: string;
   sizeBytes: number;
   provenanceStatus: string;
-  sqsScore: number;
 }): Promise<Video> {
   await ensureSchema();
   await bindings()
@@ -350,7 +336,7 @@ export async function createVideo(input: {
         category, license, prompt, object_key, content_type, size_bytes,
         provenance_status, sqs_score, views, created_at
       ) VALUES (
-        ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, 0, ?15
+        ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 0, 0, ?14
       )`,
     )
     .bind(
@@ -367,7 +353,6 @@ export async function createVideo(input: {
       input.contentType,
       input.sizeBytes,
       input.provenanceStatus,
-      input.sqsScore,
       new Date().toISOString(),
     )
     .run();

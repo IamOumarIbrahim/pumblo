@@ -21,12 +21,8 @@ export default async function Home({
   const params = await searchParams;
   const query = params.q?.trim().slice(0, 80) ?? "";
   const category = params.category ?? "all";
-  const sort = params.sort === "newest" ? "newest" : "sqs";
-  const videos = await listVideos({
-    query,
-    category,
-    sort,
-  });
+  const sort = params.sort === "newest" ? "newest" : "community";
+  const videos = await listVideos({ query, category, sort });
 
   return (
     <main>
@@ -34,62 +30,101 @@ export default async function Home({
         <div className="hero-grid">
           <div className="eyebrow">
             <span className="live-dot" />
-            A new cinema is forming
+            For AI motion creators
           </div>
           <h1>
-            The feed where
+            Give the clip a home.
             <br />
-            <em>imagination ships.</em>
+            <em>Keep the process.</em>
           </h1>
           <p className="hero-copy">
-            AI-generated films, animation, music, and explainers—published by
-            accountable human creators and ranked for craft.
+            Turn a finished AI film into one clean, public page with the tool,
+            workflow, license, creator profile, and feedback attached.
           </p>
           <div className="hero-actions">
             <Link className="button button-primary button-large" href="/upload">
-              Publish your first film <span aria-hidden="true">↗</span>
+              Create a film page <span aria-hidden="true">↗</span>
             </Link>
-            <a className="button button-ghost button-large" href="#discovery">
-              Explore discovery
+            <a
+              className="button button-ghost button-large"
+              href="#how-it-works"
+            >
+              See how it works
             </a>
           </div>
+          <p className="hero-note">
+            Free to browse · no follower minimum · open source
+          </p>
         </div>
         <aside className="hero-manifesto">
-          <span className="manifesto-index">01 / 03</span>
+          <span className="manifesto-index">THE “WHO USES THIS?” TEST</span>
           <p>
-            Every upload states how it was made. Every creator stands behind
-            their work.
+            A creator should get value from the first upload—even before a feed
+            has an audience.
           </p>
           <div className="manifesto-rule" />
           <div className="manifesto-stats">
             <span>
-              <strong>10</strong>
-              beta seats
+              <strong>~2 min</strong>
+              to publish
             </span>
             <span>
-              <strong>0</strong>
-              paid rankings
+              <strong>90 MB</strong>
+              per film
             </span>
             <span>
-              <strong>100%</strong>
-              AI video
+              <strong>AGPL</strong>
+              open source
             </span>
           </div>
         </aside>
       </section>
 
+      <section className="value-section" aria-labelledby="value-title">
+        <div className="value-heading">
+          <span className="section-kicker">Useful before it is popular</span>
+          <h2 id="value-title">One upload. Three reasons to share it.</h2>
+        </div>
+        <div className="value-grid">
+          <article>
+            <span>01</span>
+            <h3>A page, not a file dump</h3>
+            <p>
+              Send one watchable link to a client, collaborator, Discord, or
+              portfolio without explaining the context again.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>The recipe stays attached</h3>
+            <p>
+              Credit any model or tool, describe a hybrid workflow, choose a
+              license, and reveal as much prompt detail as you want.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Feedback has a home</h3>
+            <p>
+              Likes and comments live beside the film instead of disappearing
+              across group chats and temporary social posts.
+            </p>
+          </article>
+        </div>
+      </section>
+
       <section className="discovery" id="discovery">
         <div className="section-heading">
           <div>
-            <span className="section-kicker">Discovery</span>
-            <h2>{query ? `Results for “${query}”` : "Worth watching now"}</h2>
+            <span className="section-kicker">Made in public</span>
+            <h2>{query ? `Results for “${query}”` : "Films with the process attached"}</h2>
           </div>
-          <div className="sort-links">
+          <div className="sort-links" aria-label="Sort films">
             <Link
-              className={sort === "sqs" ? "active" : ""}
-              href={filterHref({ query, category, sort: "sqs" })}
+              className={sort === "community" ? "active" : ""}
+              href={filterHref({ query, category, sort: "community" })}
             >
-              Curated
+              Community
             </Link>
             <Link
               className={sort === "newest" ? "active" : ""}
@@ -123,17 +158,70 @@ export default async function Home({
             <span className="empty-glyph" aria-hidden="true">
               ◇
             </span>
-            <h3>{query ? "No films matched that search" : "The screen is yours"}</h3>
+            <h3>
+              {query
+                ? "No films matched that search"
+                : "Start with one film, not a follower count"}
+            </h3>
             <p>
               {query
-                ? "Try a creator name, AI tool, or a broader phrase."
-                : "Pumblo’s first ten creators are setting the tone. Publish the first film and claim your channel."}
+                ? "Try a title, creator, tool, or broader phrase."
+                : "Your first upload already gives you a polished film page, a public creator profile, and a link worth sharing."}
             </p>
             <Link className="button button-primary" href="/upload">
-              Upload a video
+              Publish the first film
             </Link>
           </div>
         )}
+      </section>
+
+      <section className="how-section" id="how-it-works">
+        <div className="how-heading">
+          <span className="section-kicker">No growth-hack homework</span>
+          <h2>From finished render to shareable page in three moves.</h2>
+        </div>
+        <ol className="how-steps">
+          <li>
+            <b>1</b>
+            <div>
+              <h3>Claim a creator handle</h3>
+              <p>Sign in, choose a name, and skip every optional field.</p>
+            </div>
+          </li>
+          <li>
+            <b>2</b>
+            <div>
+              <h3>Upload a browser-ready clip</h3>
+              <p>Add the tool, workflow, license, and optional process notes.</p>
+            </div>
+          </li>
+          <li>
+            <b>3</b>
+            <div>
+              <h3>Share the film page</h3>
+              <p>Viewers watch without an account; sign-in is only for actions.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section className="open-source-band">
+        <div>
+          <span className="section-kicker">Built in public</span>
+          <h2>Trust the product by reading the code.</h2>
+          <p>
+            Pumblo is AGPL-licensed, fact-checked in the repository, and shipped
+            with executable release gates.
+          </p>
+        </div>
+        <a
+          className="button button-primary button-large"
+          href="https://github.com/IamOumarIbrahim/pumblo"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Star Pumblo on GitHub ↗
+        </a>
       </section>
     </main>
   );
@@ -151,7 +239,7 @@ function filterHref({
   const params = new URLSearchParams();
   if (query) params.set("q", query);
   if (category !== "all") params.set("category", category);
-  if (sort !== "sqs") params.set("sort", sort);
+  if (sort !== "community") params.set("sort", sort);
   const value = params.toString();
   return value ? `/?${value}` : "/";
 }

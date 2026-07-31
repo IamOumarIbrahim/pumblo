@@ -29,6 +29,7 @@ export function Engagement({
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
 
   const actionPath = !signedIn
     ? signInPath
@@ -58,6 +59,28 @@ export function Engagement({
       setLikeCount(payload.count ?? likeCount);
     }
     setBusy(false);
+  }
+
+  async function shareFilm() {
+    const share = {
+      title: document.title,
+      text: "Watch this film and see the process behind it.",
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(share);
+        setShareLabel("Shared");
+      } else {
+        await navigator.clipboard.writeText(share.url);
+        setShareLabel("Link copied");
+      }
+    } catch (shareError) {
+      if (shareError instanceof DOMException && shareError.name === "AbortError") {
+        return;
+      }
+      setShareLabel("Copy failed");
+    }
   }
 
   async function addComment(event: React.FormEvent<HTMLFormElement>) {
@@ -104,6 +127,9 @@ export function Engagement({
         <a className="share-button" href="#comments">
           Comment · {comments.length}
         </a>
+        <button className="share-button" type="button" onClick={shareFilm}>
+          {shareLabel}
+        </button>
       </div>
 
       <div className="comments" id="comments">

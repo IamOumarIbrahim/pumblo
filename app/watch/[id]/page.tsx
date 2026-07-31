@@ -31,7 +31,16 @@ export async function generateMetadata({
   return {
     title: video.title,
     description:
-      video.description || `AI-generated video made with ${video.generationTool}.`,
+      video.description || `AI motion work created with ${video.generationTool}.`,
+    alternates: { canonical: `/watch/${video.id}` },
+    openGraph: {
+      title: `${video.title} by ${video.ownerDisplayName}`,
+      description:
+        video.description ||
+        `Watch the film and see the ${video.generationTool} process behind it.`,
+      type: "video.other",
+      url: `/watch/${video.id}`,
+    },
   };
 }
 
@@ -51,7 +60,7 @@ export default async function WatchPage({
     viewer ? getProfileByEmail(viewer.email) : Promise.resolve(null),
     listComments(id),
     viewer ? getLikeState(id, viewer.email) : Promise.resolve(false),
-    listVideos({ category: video.category, sort: "sqs", limit: 5 }),
+    listVideos({ category: video.category, sort: "community", limit: 5 }),
     searchParams,
     incrementViews(id),
   ]);
@@ -62,8 +71,7 @@ export default async function WatchPage({
       {query.uploaded === "1" ? (
         <div className="success-banner">
           <span>✓</span>
-          Your film is live. Copy this page or share your channel when you are
-          ready.
+          Your film page is live. Share it while the process is still attached.
         </div>
       ) : null}
 
@@ -83,7 +91,7 @@ export default async function WatchPage({
             <div className="film-flags">
               <span>{video.category}</span>
               <span>{video.generationTool}</span>
-              <span className="provenance-flag">Self-declared AI</span>
+              <span className="provenance-flag">Creator-declared process</span>
             </div>
             <h1>{video.title}</h1>
             <p className="watch-meta">
@@ -103,7 +111,7 @@ export default async function WatchPage({
                   {video.ownerDisplayName}
                 </Link>
                 <p>
-                  @{video.ownerHandle} <span>✓ Human signed in</span>
+                  @{video.ownerHandle} <span>Creator profile</span>
                 </p>
               </div>
               <Link
@@ -124,7 +132,7 @@ export default async function WatchPage({
             <div className="provenance-panel">
               <div>
                 <span className="section-kicker">Process card</span>
-                <h2>How it was made</h2>
+                <h2>The recipe behind the render</h2>
               </div>
               <dl>
                 <div>
@@ -141,12 +149,12 @@ export default async function WatchPage({
                 </div>
                 <div>
                   <dt>Provenance</dt>
-                  <dd>{video.provenanceStatus.replaceAll("-", " ")}</dd>
+                  <dd>creator declared</dd>
                 </div>
               </dl>
               {video.prompt ? (
                 <details>
-                  <summary>Creator’s prompt and process notes</summary>
+                  <summary>Open prompt and process notes</summary>
                   <p>{video.prompt}</p>
                 </details>
               ) : null}
