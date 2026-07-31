@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
 import { Avatar } from "@/app/components/Avatar";
 import { FollowButton } from "@/app/components/FollowButton";
 import { VideoCard } from "@/app/components/VideoCard";
+import { profileMediaUrl } from "@/app/lib/profile-media";
 import {
   getFollowState,
   getProfileByEmail,
@@ -63,17 +65,32 @@ export default async function ProfilePage({
   return (
     <main className="profile-page">
       <section
-        className="profile-banner"
+        className={profile.bannerObjectKey ? "profile-banner has-media" : "profile-banner"}
         style={{
           background: `linear-gradient(120deg, ${profile.avatarColor} 0%, #15171b 48%, #0a0b0d 100%)`,
         }}
       >
+        {profile.bannerObjectKey ? (
+          <Image
+            src={profileMediaUrl(profile.handle, "banner", profile.updatedAt)}
+            alt={`${profile.displayName}'s profile banner`}
+            width={1600}
+            height={480}
+            priority
+            unoptimized
+          />
+        ) : null}
         <span>PUMBLO / AI VIDEO CREATOR</span>
       </section>
       <section className="profile-intro">
         <Avatar
           name={profile.displayName}
           color={profile.avatarColor}
+          src={
+            profile.avatarObjectKey
+              ? profileMediaUrl(profile.handle, "avatar", profile.updatedAt)
+              : undefined
+          }
           size="xl"
         />
         <div className="profile-identity">

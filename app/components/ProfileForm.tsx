@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ImageCropField } from "./ImageCropField";
 
 type ProfileDraft = {
   handle: string;
@@ -9,7 +10,14 @@ type ProfileDraft = {
   location: string;
   website: string;
   avatarColor: string;
+  avatarUrl: string;
+  bannerUrl: string;
 };
+
+type MediaAction =
+  | { action: "keep" }
+  | { action: "upload"; blob: Blob }
+  | { action: "delete" };
 
 const colors = [
   "#b8ff3d",
@@ -37,44 +45,77 @@ export function ProfileForm({
       location: "",
       website: "",
       avatarColor: colors[0],
+      avatarUrl: "",
+      bannerUrl: "",
     },
   );
+  const [avatarAction, setAvatarAction] = useState<MediaAction>({ action: "keep" });
+  const [bannerAction, setBannerAction] = useState<MediaAction>({ action: "keep" });
+  const [avatarEditing, setAvatarEditing] = useState(false);
+  const [bannerEditing, setBannerEditing] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  function update<K extends keyof ProfileDraft>(
-    key: K,
-    value: ProfileDraft[K],
-  ) {
+  function update<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (avatarEditing || bannerEditing) {
+      setError("Finish each open crop with “Use this crop” before saving.");
+      return;
+    }
     setSaving(true);
     setError("");
 
-    const response = await fetch("/api/profile", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const payload = (await response.json()) as {
-      error?: string;
-      profile?: { handle: string };
-    };
+    try {
+      const response = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          handle: form.handle,
+          displayName: form.displayName,
+          bio: form.bio,
+          location: form.location,
+          website: form.website,
+          avatarColor: form.avatarColor,
+        }),
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        profile?: { handle: string };
+      };
+      if (!response.ok || !payload.profile) {
+        throw new Error(payload.error ?? "Profile could not be saved.");
+      }
 
-    if (!response.ok || !payload.profile) {
-      setError(payload.error ?? "Profile could not be saved.");
+      await saveMedia("avatar", avatarAction);
+      await saveMedia("banner", bannerAction);
+      window.location.assign(nextPath || `/profile/${payload.profile.handle}`);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Profile could not be saved.");
       setSaving(false);
-      return;
     }
-
-    window.location.assign(nextPath || `/profile/${payload.profile.handle}`);
   }
 
   return (
     <form className="profile-form" onSubmit={submit}>
+      <div className="profile-media-editor">
+        <ImageCropField
+          kind="banner"
+          initialUrl={form.bannerUrl}
+          onChange={setBannerAction}
+          onEditingChange={setBannerEditing}
+        />
+        <ImageCropField
+          kind="avatar"
+          initialUrl={form.avatarUrl}
+          onChange={setAvatarAction}
+          onEditingChange={setAvatarEditing}
+        />
+      </div>
+
       <div className="form-split">
         <label>
           <span>Display name</span>
@@ -111,9 +152,7 @@ export function ProfileForm({
       </div>
 
       <label>
-        <span>
-          Bio <i>optional</i>
-        </span>
+        <span>Bio <i>optional</i></span>
         <textarea
           maxLength={280}
           rows={4}
@@ -121,7 +160,7 @@ export function ProfileForm({
           onChange={(event) => update("bio", event.target.value)}
           placeholder="What do you make, and what are you exploring?"
         />
-        <small>{form.bio.length}/280</small>
+        <small>{form.bio.length}/280 · Clear this field and save to remove your bio.</small>
       </label>
 
       <div className="form-split">
@@ -146,7 +185,7 @@ export function ProfileForm({
       </div>
 
       <fieldset className="color-fieldset">
-        <legend>Profile color</legend>
+        <legend>Fallback profile color</legend>
         <div className="color-options">
           {colors.map((color) => (
             <button
@@ -154,7 +193,7 @@ export function ProfileForm({
               className={form.avatarColor === color ? "selected" : ""}
               style={{ backgroundColor: color }}
               type="button"
-              aria-label={`Use ${color} as profile color`}
+              aria-label={`Use ${color} as fallback profile color`}
               aria-pressed={form.avatarColor === color}
               onClick={() => update("avatarColor", color)}
             />
@@ -166,18 +205,29 @@ export function ProfileForm({
 
       <div className="form-actions">
         <button className="button button-primary button-large" disabled={saving}>
-          {saving
-            ? "Saving…"
-            : initial
-              ? "Save changes"
-              : "Open my creator page"}
+          {saving ? "Saving profile…" : initial ? "Save profile" : "Create my Pumblo channel"}
         </button>
-        <p>
-          Takes about 30 seconds. Your sign-in email is never shown publicly.
-        </p>
+        <p>Your sign-in email stays private. Public fields and either image can be updated or removed later.</p>
       </div>
     </form>
   );
+}
+
+async function saveMedia(kind: "avatar" | "banner", action: MediaAction) {
+  if (action.action === "keep") return;
+  const response = await fetch(`/api/profile/media/${kind}`, {
+    method: action.action === "delete" ? "DELETE" : "POST",
+    headers:
+      action.action === "upload"
+        ? {
+            "content-type": action.blob.type,
+            "x-pumblo-size": String(action.blob.size),
+          }
+        : undefined,
+    body: action.action === "upload" ? action.blob : undefined,
+  });
+  const payload = (await response.json()) as { error?: string };
+  if (!response.ok) throw new Error(payload.error ?? `${kind} could not be saved.`);
 }
 
 function suggestedHandle(name: string): string {

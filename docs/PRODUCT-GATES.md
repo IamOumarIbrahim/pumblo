@@ -20,7 +20,7 @@ A gate fails when its answer relies on imaginary scale, fake activity, or a clai
 
 **Question:** Does the main product work like a video-sharing platform?
 
-**Pass:** Public feed, playback, uploads, creator channels, search, likes, comments, follows, and a Following feed.
+**Pass:** Public feed, playback, uploads, customizable creator channels, search, likes, comments, follows, Following, and an interactive under-60-second Quicks feed.
 
 **Fail:** A static film-page builder with a feed bolted on.
 
@@ -40,7 +40,7 @@ A gate fails when its answer relies on imaginary scale, fake activity, or a clai
 
 **Question:** What can be removed before asking for commitment?
 
-**Pass:** Browsing, search, playback, creator pages, and sharing need no account. Profile setup needs two fields. Tool input is free text. The configured deployment needs no new card or third-party secret.
+**Pass:** Browsing, search, playback, creator pages, Quicks, and sharing need no account. A write action prompts Sign in with ChatGPT. Profile setup needs two text fields; avatar/banner cropping remains optional. Tool input is free text. The configured deployment needs no new card or third-party secret.
 
 **Fail:** Sign-in walls viewing or setup begins with infrastructure accounts.
 
@@ -72,7 +72,7 @@ A gate fails when its answer relies on imaginary scale, fake activity, or a clai
 
 **Question:** Is the 100-user goal bounded in code?
 
-**Pass:** 100 creators × 2 active uploads × 40 MiB = 8,000 MiB; owner deletion recovers storage. There is no user-101 signup wall.
+**Pass:** 100 creators × (2 active uploads × 40 MiB + 2 profile images × 3 MiB) = 8,600 MiB; deletion/replacement recovers storage. There is no user-101 signup wall.
 
 **Fail:** “Handles 100 users” without resource math or enforceable limits.
 

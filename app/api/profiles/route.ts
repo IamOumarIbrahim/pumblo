@@ -1,4 +1,5 @@
 import { listProfiles } from "@/db";
+import { profileMediaUrl } from "@/app/lib/profile-media";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -12,6 +13,12 @@ export async function GET(request: Request) {
       location: profile.location,
       website: profile.website,
       avatarColor: profile.avatarColor,
+      avatarUrl: profile.avatarObjectKey
+        ? profileMediaUrl(profile.handle, "avatar", profile.updatedAt)
+        : "",
+      bannerUrl: profile.bannerObjectKey
+        ? profileMediaUrl(profile.handle, "banner", profile.updatedAt)
+        : "",
       followerCount: profile.followerCount,
       followingCount: profile.followingCount,
       createdAt: profile.createdAt,

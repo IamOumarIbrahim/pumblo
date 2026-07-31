@@ -24,6 +24,7 @@ export function VideoCard({ video }: { video: Video }) {
           <Avatar
             name={video.ownerDisplayName}
             color={video.ownerAvatarColor}
+            src={video.ownerAvatarUrl || undefined}
             size="md"
           />
         </Link>

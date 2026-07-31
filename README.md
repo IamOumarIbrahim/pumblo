@@ -21,7 +21,7 @@
 > [!IMPORTANT]
 > **No card setup path.** Local development needs no API keys. The checked-in Sites project supplies production authentication plus managed D1 and R2 bindings. Hosting is not claimed to be free forever; quotas and availability remain platform-controlled.
 
-Pumblo is for people who make and watch AI video. It behaves like a focused video network: a public feed, searchable videos and creators, channel pages, likes, comments, follows, and a Following feed. A creator can optionally attach tools, workflow, license, and process notes under **Behind the render**—useful context, but not the main product.
+Pumblo is for people who make and watch AI video. It behaves like a focused video network: a public feed, an under-60-second **Quicks** feed, searchable videos and creators, customizable channel pages, likes, comments, follows, and a Following feed. A creator can optionally attach tools, workflow, license, and process notes under **Behind the render**—useful context, but not the main product.
 
 ```powershell
 # Quickstart — Windows PowerShell
@@ -55,8 +55,8 @@ General video platforms mix AI work into everything else; generation tools often
 
 Instead of making a process page the destination, Pumblo puts the video and audience loop first:
 
-- **Watch and discover**: public trending, latest, category, search, and Following feeds.
-- **Publish a channel**: each creator gets a searchable public profile and canonical video URLs.
+- **Watch and discover**: public trending, latest, category, search, Following, and vertical Quicks feeds.
+- **Publish a channel**: each creator gets a searchable public profile with a cropped avatar/banner and canonical video URLs.
 - **Interact**: persisted likes, comments, and follows connect viewers to creators.
 - **Inspect the process**: an optional creator-declared card records tools, workflow, license, and notes.
 
@@ -66,8 +66,9 @@ Instead of making a process page the destination, Pumblo puts the video and audi
 
 - 🔎 **Queryable discovery**: search video titles, descriptions, tools, creator handles, display names, and public profiles.
 - ▶️ **Public playback**: anyone can watch; `/media/:id` supports HTTP range requests for seeking.
+- ⚡ **Quicks**: uploads strictly under 60 seconds enter a vertical, paginated feed with keyboard and on-screen navigation.
 - ⬆️ **Streaming uploads**: MP4/WebM bodies stream directly into R2 instead of being buffered as multipart data.
-- 👤 **Creator channels**: handle and display name are the only required profile fields.
+- 👤 **Creator channels**: handle and display name are the only required fields; avatar and banner images have drag/zoom crop previews and can be replaced or removed.
 - 💚 **Audience loop**: one like per profile/video, comments up to 500 characters, follows, follower counts, and a personal Following feed.
 - 🧹 **Capacity recovery**: owners can delete a video and its likes/comments to free an upload slot.
 - 🧰 **Behind the render**: free-text tool input, five workflow modes, licensing, and optional process notes.
@@ -85,7 +86,7 @@ flowchart LR
     B["Public browser"] --> W["Next.js 16 / Vinext worker"]
     A["Sign in with ChatGPT"] --> W
     W --> D["D1: profiles, videos, likes, comments, follows"]
-    W --> R["R2: MP4 / WebM objects"]
+    W --> R["R2: videos plus cropped profile images"]
     W --> M["Range-aware media route"]
     M --> B
 ```
@@ -146,12 +147,13 @@ Live domain: **[pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-
 
 ## 🖥️ How to Use
 
-1. Browse or search AI videos without signing in.
-2. Choose **Upload video**, authenticate, and claim a creator handle.
-3. Upload a browser-ready MP4/WebM up to 40 MB.
-4. Add the generation tool and disclosure; process notes are optional.
-5. Open a second account to watch, like, comment, follow the creator, and return through the Following feed.
-6. From an owned watch page, delete a video to reclaim one of the two active slots.
+1. Browse, search, or scroll **Quicks** without signing in.
+2. Choose a write action, continue with ChatGPT, and claim a creator handle.
+3. Optionally choose, drag/zoom, and confirm crops for a profile picture and banner.
+4. Upload a browser-ready MP4/WebM up to 40 MB; videos strictly under 60 seconds also enter Quicks.
+5. Add the generation tool and disclosure; process notes are optional.
+6. Open a second account to watch, like, comment, follow the creator, and return through the Following feed.
+7. Edit or clear profile fields, replace/remove images, or delete an owned video to reclaim an upload slot.
 
 For a local two-person acceptance test:
 
@@ -197,10 +199,11 @@ Newest publication time breaks ties. The formula ranks activity, not artistic qu
 The launch envelope is explicit and test-enforced:
 
 ```text
-100 creators × 2 active videos × 40 MiB = 8,000 MiB maximum media payload
+100 creators × (2 active videos × 40 MiB + 2 profile images × 3 MiB)
+= 8,600 MiB maximum modeled media payload
 ```
 
-There is no application-level signup cap; “100 creators” is a capacity target, not a user-101 lockout. Owner deletion returns storage and an upload slot.
+Of that total, videos occupy at most 8,000 MiB and cropped profile media at most 600 MiB. There is no application-level signup cap; “100 creators” is a capacity target, not a user-101 lockout. Video deletion returns storage and an upload slot; profile images can be replaced or removed.
 
 Current official free-plan research shows why the existing Sites-managed D1/R2 route is retained:
 
@@ -209,7 +212,7 @@ Current official free-plan research shows why the existing Sites-managed D1/R2 r
 | Cloudflare R2 | 10 GB-month Standard storage and free egress; direct setup has an R2 subscription/checkout flow | Capacity benchmark; Sites manages the binding |
 | Cloudflare D1 | 5 GB total on Free plus daily read/write allowances | More than enough for launch metadata |
 | Cloudflare Stream | Usage-priced, not free | Rejected for no-card launch |
-| Supabase Free | 1 GB storage and 5 GB egress | Too small for the 8,000 MiB envelope |
+| Supabase Free | 1 GB storage and 5 GB egress | Too small for the 8,600 MiB envelope |
 | Vercel Blob Hobby | 1 GB storage and 10 GB transfer | Too small |
 | Firebase Storage | Requires Blaze billing for current default-bucket access | Rejected |
 | Cloudinary Free | No card and 25 shared monthly credits across storage/bandwidth/transforms | Valid fallback, but adds an external account and a volatile shared media budget |
@@ -225,6 +228,8 @@ Sources and caveats: [`docs/HOSTING-100-USERS.md`](docs/HOSTING-100-USERS.md).
 | Profiles | No application-level signup cap | Avoid an artificial growth barrier |
 | Videos | 2 active per creator | Bound launch storage; deletion recovers slots |
 | Video file | MP4 or WebM, 40 MB maximum | Browser-ready source; no transcoding |
+| Quicks | Duration greater than 0 and strictly below 60 seconds | Automatic vertical-feed eligibility |
+| Profile images | JPEG/PNG/WebP input; cropped output, 3 MiB each | 512 × 512 avatar and 1600 × 480 banner |
 | Database | D1 binding `DB` | Profiles, metadata, likes, comments, follows, views |
 | Media | R2 binding `MEDIA` | Durable objects and byte-range reads |
 | Authentication | Sign in with ChatGPT | Required for writes, never for viewing |
@@ -252,10 +257,12 @@ Public HTTP endpoints: [`docs/api.md`](docs/api.md).
 pumblo/
 ├── .openai/hosting.json       - Sites project and D1/R2 declarations
 ├── app/                       - UI, authentication, pages, and HTTP routes
-│   ├── api/                   - Profile, video, follow, like, comment, delete
+│   ├── api/                   - Profile media, Quicks, video, follow, like, comment
 │   ├── following/             - Signed-in following feed
 │   ├── media/[id]/            - Range-aware video delivery
 │   ├── profile/[handle]/      - Public creator channels
+│   ├── profile-media/         - Public cropped avatar/banner delivery
+│   ├── quicks/                - Vertical under-60-second feed
 │   ├── upload/                - Publishing flow
 │   └── watch/[id]/            - Playback, interaction, and process context
 ├── db/                        - D1 schema and persistence functions
@@ -276,6 +283,8 @@ pumblo/
 | Node version error | Runtime is older than 22.13 | Install Node.js 22.13+ and rerun setup |
 | Port 3000 is occupied | Another local app is listening | Run `npm run dev -- --port 3001` |
 | Upload is rejected | Missing profile, wrong format, over 40 MB, or both active slots are used | Create a profile, export MP4/WebM under 40 MB, or delete an owned video |
+| Video is absent from Quicks | Its verified duration is 60 seconds or longer | Upload a version strictly shorter than 60 seconds |
+| Profile image will not save | Crop is unconfirmed, format is unsupported, or cropped output exceeds 3 MiB | Confirm **Use this crop** and retry with JPEG, PNG, or WebP |
 | Production asks for sign-in | The action changes data | Authenticate, then return to the action |
 | Local state should be reset | Miniflare persists data | Stop the server and remove only this repo's `.wrangler/` directory |
 

@@ -124,6 +124,7 @@ export default async function WatchPage({
                 <Avatar
                   name={video.ownerDisplayName}
                   color={video.ownerAvatarColor}
+                  src={video.ownerAvatarUrl || undefined}
                   size="lg"
                 />
               </Link>

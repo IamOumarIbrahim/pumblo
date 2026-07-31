@@ -9,6 +9,7 @@ export async function GET() {
   ]);
   const entries = [
     urlEntry(base, new Date().toISOString(), "daily", "1.0"),
+    urlEntry(`${base}/quicks`, new Date().toISOString(), "daily", "0.9"),
     urlEntry(`${base}/about`, undefined, "monthly", "0.6"),
     ...profiles.map((profile) =>
       urlEntry(

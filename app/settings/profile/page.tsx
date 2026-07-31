@@ -1,5 +1,6 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { ProfileForm } from "@/app/components/ProfileForm";
+import { profileMediaUrl } from "@/app/lib/profile-media";
 import { getProfileByEmail } from "@/db";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,12 @@ export default async function ProfileSettingsPage({
                 location: profile.location,
                 website: profile.website,
                 avatarColor: profile.avatarColor,
+                avatarUrl: profile.avatarObjectKey
+                  ? profileMediaUrl(profile.handle, "avatar", profile.updatedAt)
+                  : "",
+                bannerUrl: profile.bannerObjectKey
+                  ? profileMediaUrl(profile.handle, "banner", profile.updatedAt)
+                  : "",
               }
             : null
         }

@@ -45,13 +45,18 @@ test("the promised two-person journey has server routes", async () => {
     "app/page.tsx",
     "app/settings/profile/page.tsx",
     "app/profile/[handle]/page.tsx",
+    "app/profile-media/[handle]/[kind]/route.ts",
     "app/following/page.tsx",
+    "app/quicks/page.tsx",
     "app/upload/page.tsx",
     "app/watch/[id]/page.tsx",
     "app/media/[id]/route.ts",
     "app/api/videos/[id]/like/route.ts",
     "app/api/videos/[id]/comments/route.ts",
     "app/api/videos/[id]/route.ts",
+    "app/api/videos/[id]/view/route.ts",
+    "app/api/quicks/route.ts",
+    "app/api/profile/media/[kind]/route.ts",
     "app/api/profiles/[handle]/follow/route.ts",
     "app/manifest.webmanifest/route.ts",
     "app/robots.txt/route.ts",
@@ -59,6 +64,61 @@ test("the promised two-person journey has server routes", async () => {
     "app/favicon.svg/route.ts",
   ];
   await Promise.all(paths.map((path) => stat(new URL(path, root))));
+});
+
+test("profiles support cropped avatar and banner create, update, read, and removal", async () => {
+  const crop = await text("app/components/ImageCropField.tsx");
+  const form = await text("app/components/ProfileForm.tsx");
+  const mediaApi = await text("app/api/profile/media/[kind]/route.ts");
+  const mediaRead = await text("app/profile-media/[handle]/[kind]/route.ts");
+  const schema = await text("db/schema.ts");
+  assert.match(crop, /512, height: 512/);
+  assert.match(crop, /1600, height: 480/);
+  assert.match(crop, /toBlob/);
+  assert.match(crop, /positionX/);
+  assert.match(crop, /positionY/);
+  assert.match(form, /Finish each open crop/);
+  assert.match(form, /method: action\.action === "delete" \? "DELETE" : "POST"/);
+  assert.match(mediaApi, /MAX_PROFILE_IMAGE_BYTES/);
+  assert.match(mediaApi, /matchesImageType/);
+  assert.match(mediaApi, /readLimitedImage/);
+  assert.doesNotMatch(mediaApi, /request\.arrayBuffer/);
+  assert.match(mediaRead, /mediaBucket\(\)\.get/);
+  assert.match(schema, /avatarObjectKey/);
+  assert.match(schema, /bannerObjectKey/);
+});
+
+test("Quicks is a strict, paginated, keyboard-accessible community feed", async () => {
+  const database = await text("db/index.ts");
+  const feed = await text("app/components/QuickFeed.tsx");
+  const upload = await text("app/components/UploadForm.tsx");
+  const api = await text("app/api/quicks/route.ts");
+  assert.match(database, /v\.duration_seconds > 0 AND v\.duration_seconds < /);
+  assert.match(database, /OFFSET/);
+  assert.match(feed, /ArrowDown/);
+  assert.match(feed, /ArrowUp/);
+  assert.match(feed, /IntersectionObserver/);
+  assert.match(feed, /api\/videos\/\$\{current\.id\}\/view/);
+  assert.match(upload, /isQuickDuration/);
+  assert.match(api, /QUICK_DURATION_CEILING_SECONDS/);
+  assert.doesNotMatch(api, /ownerEmail|objectKey/);
+});
+
+test("the left navigation keeps guest viewing open and gates only write actions", async () => {
+  const navigation = await text("app/components/SidebarNav.tsx");
+  const quicks = await text("app/components/QuickFeed.tsx");
+  assert.match(navigation, /label: "Quicks"/);
+  assert.match(navigation, /Watch as a guest/);
+  assert.match(navigation, /Sign in with ChatGPT/);
+  assert.match(quicks, /signInPath/);
+  assert.match(quicks, /api\/videos\/\$\{video\.id\}\/like/);
+});
+
+test("migration 0003 adds durable profile media references and video duration", async () => {
+  const migration = await text("drizzle/0003_flimsy_microchip.sql");
+  assert.match(migration, /avatar_object_key/);
+  assert.match(migration, /banner_object_key/);
+  assert.match(migration, /duration_seconds/);
 });
 
 test("the main product is an AI-only video network", async () => {

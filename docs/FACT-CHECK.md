@@ -6,7 +6,7 @@ Checked July 31, 2026. Product copy is intentionally narrower than the available
 
 Some generation tools already expose public assets or galleries. That makes “share a generation” an insufficient product.
 
-Pumblo's claim is narrower and testable: it is an open-source, tool-neutral, AI-only video-sharing platform with public watching, uploads, queryable discovery, creator channels, likes, comments, follows, and optional process context.
+Pumblo's claim is narrower and testable: it is an open-source, tool-neutral, AI-only video-sharing platform with public watching, uploads, queryable discovery, creator channels, an under-60-second Quicks feed, likes, comments, follows, and optional process context.
 
 The process card is not the main product. It is a secondary **Behind the render** feature attached to a video-first experience.
 
@@ -25,7 +25,7 @@ Pumblo does not read or validate C2PA manifests. It records an authenticated cre
 
 The current comparison uses official provider sources and is maintained in [`HOSTING-100-USERS.md`](HOSTING-100-USERS.md).
 
-The application enforces a maximum media envelope of 8,000 MiB for 100 fully utilized creator accounts. This is below direct R2's published 10 GB-month Standard-storage free allowance, but direct Cloudflare allowance numbers do not establish Sites-managed quotas.
+The application models a maximum media envelope of 8,600 MiB for 100 fully utilized creator accounts: 8,000 MiB of video plus 600 MiB of cropped avatar/banner media. This is below direct R2's published 10 GB-month Standard-storage free allowance, but direct Cloudflare allowance numbers do not establish Sites-managed quotas.
 
 Therefore Pumblo claims:
 
@@ -40,6 +40,7 @@ It does not claim free hosting forever, unlimited bandwidth, an uptime SLA, or 1
 Pumblo ships:
 
 - canonical URLs for videos and creator channels;
+- a public Quicks route included in the sitemap and installable-app shortcuts;
 - `VideoObject` structured data on watch pages;
 - an XML sitemap containing public profiles and videos;
 - a robots policy pointing to the sitemap;

@@ -175,6 +175,7 @@ export function Engagement({
                   <Avatar
                     name={comment.authorDisplayName}
                     color={comment.authorAvatarColor}
+                    src={comment.authorAvatarUrl || undefined}
                     size="md"
                   />
                 </Link>

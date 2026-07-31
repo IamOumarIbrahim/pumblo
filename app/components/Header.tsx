@@ -1,10 +1,12 @@
 import Link from "next/link";
 import {
   chatGPTSignOutPath,
+  chatGPTSignInPath,
   getChatGPTUser,
 } from "@/app/chatgpt-auth";
 import { getProfileByEmail } from "@/db";
 import { Avatar } from "./Avatar";
+import { profileMediaUrl } from "@/app/lib/profile-media";
 
 export async function Header() {
   const user = await getChatGPTUser();
@@ -47,6 +49,11 @@ export async function Header() {
                 <Avatar
                   name={profile?.displayName ?? user.displayName}
                   color={profile?.avatarColor ?? "#b8ff3d"}
+                  src={
+                    profile?.avatarObjectKey
+                      ? profileMediaUrl(profile.handle, "avatar", profile.updatedAt)
+                      : undefined
+                  }
                   size="sm"
                 />
                 <span className="desktop-only">
@@ -61,9 +68,14 @@ export async function Header() {
               </Link>
             </>
           ) : (
-            <Link className="button button-primary" href="/upload">
-              Upload video
-            </Link>
+            <>
+              <Link className="button button-ghost desktop-only" href={chatGPTSignInPath("/")}>
+                Sign in
+              </Link>
+              <Link className="button button-primary" href="/upload">
+                Upload video
+              </Link>
+            </>
           )}
         </nav>
       </div>

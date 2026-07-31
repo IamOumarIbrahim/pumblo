@@ -20,12 +20,13 @@ This is not a “free forever” guarantee. Sites-managed quotas and future pric
 Pumblo enforces:
 
 ```text
-100 creators × 2 active videos × 40 MiB = 8,000 MiB
+100 creators × (2 active videos × 40 MiB + 2 profile images × 3 MiB)
+= 8,600 MiB
 ```
 
-That is 8,388,608,000 bytes (about 7.81 GiB). Owners can delete a video to recover both its object storage and active slot. Profiles themselves have no application-level cap.
+That is 9,017,753,600 bytes (about 8.40 GiB): 8,000 MiB for videos and 600 MiB for cropped avatar/banner objects. Owners can delete a video to recover both its object storage and active slot, and can replace or remove profile media. Profiles themselves have no application-level count cap.
 
-The 8,000 MiB envelope sits below Cloudflare R2's published direct-account free allowance of 10 GB-month for Standard storage. This is a conservative comparison benchmark, not a promise that Sites inherits the same quota.
+The 8,600 MiB envelope sits below Cloudflare R2's published direct-account free allowance of 10 GB-month for Standard storage. This is a conservative comparison benchmark, not a promise that Sites inherits the same quota.
 
 ## Official-plan comparison
 
@@ -34,7 +35,7 @@ The 8,000 MiB envelope sits below Cloudflare R2's published direct-account free 
 | [Cloudflare R2](https://developers.cloudflare.com/r2/pricing/) | 10 GB-month Standard storage, 1 million Class A operations, 10 million Class B operations, and free Internet egress are listed as monthly free usage. [Direct setup](https://developers.cloudflare.com/r2/get-started/) uses an R2 subscription/checkout flow. | Good technical fit; current Sites binding avoids new direct-account setup. |
 | [Cloudflare D1](https://developers.cloudflare.com/d1/platform/pricing/) | Free includes 5 million rows read/day, 100,000 rows written/day, and 5 GB total storage. | Strong fit for 100-user metadata and social actions. |
 | [Cloudflare Stream](https://developers.cloudflare.com/stream/pricing/) | Stored and delivered minutes are usage-priced. | Rejected: not an absolutely free launch path. |
-| [Supabase Free](https://supabase.com/docs/guides/platform/billing-on-supabase) | Free includes 1 GB storage, 5 GB egress, and a 500 MB database. | Media storage is below the 8,000 MiB envelope. |
+| [Supabase Free](https://supabase.com/docs/guides/platform/billing-on-supabase) | Free includes 1 GB storage, 5 GB egress, and a 500 MB database. | Media storage is below the 8,600 MiB envelope. |
 | [Vercel Blob Hobby](https://vercel.com/docs/vercel-blob/usage-and-pricing) | Hobby includes 1 GB storage and 10 GB data transfer. | Media storage is below the envelope. |
 | [Firebase Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Current default-bucket access requires the Blaze pay-as-you-go plan and a linked billing account. | Rejected: conflicts with no-card setup. |
 | [Cloudinary Free](https://cloudinary.com/pricing) | Free is advertised with no credit card and 25 monthly credits. [Credits](https://cloudinary.com/documentation/billing_and_plans) are shared by storage, bandwidth, and transformations. | Possible fallback, but adds an account/secret and a variable shared media budget. |
@@ -49,4 +50,3 @@ It means the application storage guards can contain 100 fully utilized creator a
 - or the host guarantees uptime, quota continuity, or permanent zero pricing.
 
 The repository states these boundaries because a credible capacity target is more useful than an unsupported scale claim.
-

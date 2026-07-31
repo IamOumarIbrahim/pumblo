@@ -9,6 +9,7 @@ import {
   MAX_VIDEO_BYTES,
   MAX_VIDEOS_PER_PROFILE,
 } from "@/app/lib/limits";
+import { toPublicVideo } from "@/app/lib/public-video";
 
 const allowedTypes = new Set(["video/mp4", "video/webm"]);
 const allowedModes = new Set([
@@ -40,26 +41,7 @@ export async function GET(request: Request) {
       url.searchParams.get("sort") === "newest" ? "newest" : "community",
   });
   return Response.json({
-    videos: videos.map((video) => ({
-      id: video.id,
-      title: video.title,
-      description: video.description,
-      generationTool: video.generationTool,
-      generationMode: video.generationMode,
-      category: video.category,
-      license: video.license,
-      prompt: video.prompt,
-      contentType: video.contentType,
-      sizeBytes: video.sizeBytes,
-      provenanceStatus: video.provenanceStatus,
-      views: video.views,
-      createdAt: video.createdAt,
-      ownerHandle: video.ownerHandle,
-      ownerDisplayName: video.ownerDisplayName,
-      ownerAvatarColor: video.ownerAvatarColor,
-      likeCount: video.likeCount,
-      commentCount: video.commentCount,
-    })),
+    videos: videos.map(toPublicVideo),
   });
 }
 
@@ -128,10 +110,24 @@ export async function POST(request: Request) {
     const license = text(metadata.license, 40);
     const prompt = text(metadata.prompt, 1500);
     const declaration = metadata.aiDeclaration;
+    const durationSeconds =
+      typeof metadata.durationSeconds === "number"
+        ? metadata.durationSeconds
+        : Number.NaN;
 
     if (title.length < 2 || !generationTool) {
       return Response.json(
         { error: "Title and generation tool are required." },
+        { status: 400 },
+      );
+    }
+    if (
+      !Number.isFinite(durationSeconds) ||
+      durationSeconds <= 0 ||
+      durationSeconds > 21_600
+    ) {
+      return Response.json(
+        { error: "The browser could not verify this video's duration." },
         { status: 400 },
       );
     }
@@ -179,6 +175,7 @@ export async function POST(request: Request) {
         objectKey,
         contentType,
         sizeBytes: storedObject.size,
+        durationSeconds,
         provenanceStatus: "self-declared",
       });
       return Response.json({ video }, { status: 201 });
@@ -207,6 +204,7 @@ type UploadMetadata = {
   prompt?: unknown;
   aiDeclaration?: unknown;
   sizeBytes?: unknown;
+  durationSeconds?: unknown;
 };
 
 function parseMetadata(value: string | null): UploadMetadata {

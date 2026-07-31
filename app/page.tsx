@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { VideoCard } from "@/app/components/VideoCard";
 import { listProfiles, listVideos } from "@/db";
+import { profileMediaUrl } from "@/app/lib/profile-media";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,9 @@ export default async function Home({
             </a>
             <Link className="button button-ghost button-large" href="/upload">
               Upload video <span aria-hidden="true">↗</span>
+            </Link>
+            <Link className="button button-ghost button-large" href="/quicks">
+              Watch Quicks <span aria-hidden="true">ϟ</span>
             </Link>
           </div>
           <p className="hero-note">
@@ -124,6 +128,11 @@ export default async function Home({
                   <Avatar
                     name={creator.displayName}
                     color={creator.avatarColor}
+                    src={
+                      creator.avatarObjectKey
+                        ? profileMediaUrl(creator.handle, "avatar", creator.updatedAt)
+                        : undefined
+                    }
                     size="md"
                   />
                   <span>
@@ -171,7 +180,7 @@ export default async function Home({
             <h3>Discover AI video</h3>
             <p>
               Search titles, creators, and tools, then move between trending,
-              latest, category, and following feeds.
+              latest, category, Following, and vertical Quicks feeds.
             </p>
           </article>
           <article>

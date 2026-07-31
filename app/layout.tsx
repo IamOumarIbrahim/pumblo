@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Header } from "@/app/components/Header";
+import { Sidebar } from "@/app/components/Sidebar";
 import "./globals.css";
 
 const productionUrl =
@@ -68,8 +69,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header />
-        {children}
-        <footer className="site-footer">
+        <Sidebar />
+        <div className="site-content">
+          {children}
+          <footer className="site-footer">
           <div>
             <span className="brand footer-brand">
               <span className="brand-mark">P</span>
@@ -90,7 +93,8 @@ export default function RootLayout({
             </a>
             <span>Built for the first 100 creators</span>
           </div>
-        </footer>
+          </footer>
+        </div>
       </body>
     </html>
   );

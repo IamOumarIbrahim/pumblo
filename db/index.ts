@@ -15,6 +15,8 @@ export type Profile = {
   location: string;
   website: string;
   avatarColor: string;
+  avatarObjectKey: string;
+  bannerObjectKey: string;
   followerCount: number;
   followingCount: number;
   createdAt: string;
@@ -34,12 +36,14 @@ export type Video = {
   objectKey: string;
   contentType: string;
   sizeBytes: number;
+  durationSeconds: number;
   provenanceStatus: string;
   views: number;
   createdAt: string;
   ownerHandle: string;
   ownerDisplayName: string;
   ownerAvatarColor: string;
+  ownerAvatarUrl: string;
   likeCount: number;
   commentCount: number;
 };
@@ -52,6 +56,7 @@ export type Comment = {
   authorHandle: string;
   authorDisplayName: string;
   authorAvatarColor: string;
+  authorAvatarUrl: string;
 };
 
 function bindings(): RuntimeBindings {
@@ -82,6 +87,8 @@ async function initializeSchema(): Promise<void> {
         location TEXT NOT NULL DEFAULT '',
         website TEXT NOT NULL DEFAULT '',
         avatar_color TEXT NOT NULL DEFAULT '#b8ff3d',
+        avatar_object_key TEXT NOT NULL DEFAULT '',
+        banner_object_key TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -100,6 +107,7 @@ async function initializeSchema(): Promise<void> {
         object_key TEXT NOT NULL UNIQUE,
         content_type TEXT NOT NULL,
         size_bytes INTEGER NOT NULL,
+        duration_seconds REAL NOT NULL DEFAULT 0,
         provenance_status TEXT NOT NULL,
         sqs_score INTEGER NOT NULL,
         views INTEGER NOT NULL DEFAULT 0,
@@ -145,6 +153,42 @@ async function initializeSchema(): Promise<void> {
     db.prepare("CREATE INDEX IF NOT EXISTS follows_creator_idx ON follows(creator_email)"),
     db.prepare("CREATE INDEX IF NOT EXISTS follows_follower_idx ON follows(follower_email)"),
   ]);
+
+  const profileColumns = await db
+    .prepare("PRAGMA table_info(profiles)")
+    .all<{ name: string }>();
+  if (!profileColumns.results.some((column) => column.name === "avatar_object_key")) {
+    await addColumn(
+      db,
+      "ALTER TABLE profiles ADD COLUMN avatar_object_key TEXT NOT NULL DEFAULT ''",
+    );
+  }
+  if (!profileColumns.results.some((column) => column.name === "banner_object_key")) {
+    await addColumn(
+      db,
+      "ALTER TABLE profiles ADD COLUMN banner_object_key TEXT NOT NULL DEFAULT ''",
+    );
+  }
+
+  const videoColumns = await db
+    .prepare("PRAGMA table_info(videos)")
+    .all<{ name: string }>();
+  if (!videoColumns.results.some((column) => column.name === "duration_seconds")) {
+    await addColumn(
+      db,
+      "ALTER TABLE videos ADD COLUMN duration_seconds REAL NOT NULL DEFAULT 0",
+    );
+  }
+}
+
+async function addColumn(db: D1Database, statement: string): Promise<void> {
+  try {
+    await db.prepare(statement).run();
+  } catch (error) {
+    if (!(error instanceof Error) || !/duplicate column/i.test(error.message)) {
+      throw error;
+    }
+  }
 }
 
 export function mediaBucket(): R2Bucket {
@@ -166,6 +210,8 @@ export async function getProfileByEmail(
           location,
           website,
           avatar_color AS avatarColor,
+          avatar_object_key AS avatarObjectKey,
+          banner_object_key AS bannerObjectKey,
           (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
           (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
           created_at AS createdAt,
@@ -193,6 +239,8 @@ export async function getProfileByHandle(
           location,
           website,
           avatar_color AS avatarColor,
+          avatar_object_key AS avatarObjectKey,
+          banner_object_key AS bannerObjectKey,
           (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
           (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
           created_at AS createdAt,
@@ -228,6 +276,8 @@ export async function listProfiles(options?: {
         location,
         website,
         avatar_color AS avatarColor,
+        avatar_object_key AS avatarObjectKey,
+        banner_object_key AS bannerObjectKey,
         (SELECT COUNT(*) FROM follows f WHERE f.creator_email = profiles.email) AS followerCount,
         (SELECT COUNT(*) FROM follows f WHERE f.follower_email = profiles.email) AS followingCount,
         created_at AS createdAt,
@@ -293,6 +343,24 @@ export async function saveProfile(input: {
   return (await getProfileByEmail(email))!;
 }
 
+export async function setProfileMedia(
+  email: string,
+  kind: "avatar" | "banner",
+  objectKey: string,
+): Promise<Profile> {
+  await ensureSchema();
+  const column = kind === "avatar" ? "avatar_object_key" : "banner_object_key";
+  await bindings()
+    .DB.prepare(
+      `UPDATE profiles SET ${column} = ?1, updated_at = ?2 WHERE email = ?3`,
+    )
+    .bind(objectKey, new Date().toISOString(), email.toLowerCase())
+    .run();
+  const profile = await getProfileByEmail(email);
+  if (!profile) throw new Error("Profile not found.");
+  return profile;
+}
+
 const videoSelect = `
   SELECT
     v.id,
@@ -307,12 +375,18 @@ const videoSelect = `
     v.object_key AS objectKey,
     v.content_type AS contentType,
     v.size_bytes AS sizeBytes,
+    v.duration_seconds AS durationSeconds,
     v.provenance_status AS provenanceStatus,
     v.views,
     v.created_at AS createdAt,
     p.handle AS ownerHandle,
     p.display_name AS ownerDisplayName,
     p.avatar_color AS ownerAvatarColor,
+    CASE
+      WHEN p.avatar_object_key <> ''
+      THEN '/profile-media/' || p.handle || '/avatar?v=' || p.updated_at
+      ELSE ''
+    END AS ownerAvatarUrl,
     (SELECT COUNT(*) FROM likes l WHERE l.video_id = v.id) AS likeCount,
     (SELECT COUNT(*) FROM comments c WHERE c.video_id = v.id) AS commentCount
   FROM videos v
@@ -324,8 +398,10 @@ export async function listVideos(options?: {
   followedByEmail?: string;
   query?: string;
   category?: string;
+  maxDurationSeconds?: number;
   sort?: "newest" | "community";
   limit?: number;
+  offset?: number;
 }): Promise<Video[]> {
   await ensureSchema();
   const clauses: string[] = [];
@@ -359,14 +435,24 @@ export async function listVideos(options?: {
     clauses.push(`v.category = ?${values.length + 1}`);
     values.push(options.category);
   }
+  if (options?.maxDurationSeconds) {
+    clauses.push(
+      `v.duration_seconds > 0 AND v.duration_seconds < ?${values.length + 1}`,
+    );
+    values.push(options.maxDurationSeconds);
+  }
 
   const order =
     options?.sort === "newest" ? "v.created_at DESC" : COMMUNITY_ORDER_SQL;
   values.push(Math.min(options?.limit ?? 48, 100));
+  const limitIndex = values.length;
+  values.push(Math.max(0, Math.min(options?.offset ?? 0, 10_000)));
+  const offsetIndex = values.length;
   const sql = `${videoSelect}
     ${clauses.length ? `WHERE ${clauses.join(" AND ")}` : ""}
     ORDER BY ${order}
-    LIMIT ?${values.length}`;
+    LIMIT ?${limitIndex}
+    OFFSET ?${offsetIndex}`;
 
   const result = await bindings().DB.prepare(sql).bind(...values).all<Video>();
   return result.results;
@@ -395,6 +481,7 @@ export async function createVideo(input: {
   objectKey: string;
   contentType: string;
   sizeBytes: number;
+  durationSeconds: number;
   provenanceStatus: string;
 }): Promise<Video> {
   await ensureSchema();
@@ -403,9 +490,9 @@ export async function createVideo(input: {
       `INSERT INTO videos (
         id, owner_email, title, description, generation_tool, generation_mode,
         category, license, prompt, object_key, content_type, size_bytes,
-        provenance_status, sqs_score, views, created_at
+        duration_seconds, provenance_status, sqs_score, views, created_at
       ) VALUES (
-        ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 0, 0, ?14
+        ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, 0, 0, ?15
       )`,
     )
     .bind(
@@ -421,6 +508,7 @@ export async function createVideo(input: {
       input.objectKey,
       input.contentType,
       input.sizeBytes,
+      input.durationSeconds,
       input.provenanceStatus,
       new Date().toISOString(),
     )
@@ -472,7 +560,12 @@ export async function listComments(videoId: string): Promise<Comment[]> {
         c.created_at AS createdAt,
         p.handle AS authorHandle,
         p.display_name AS authorDisplayName,
-        p.avatar_color AS authorAvatarColor
+        p.avatar_color AS authorAvatarColor,
+        CASE
+          WHEN p.avatar_object_key <> ''
+          THEN '/profile-media/' || p.handle || '/avatar?v=' || p.updated_at
+          ELSE ''
+        END AS authorAvatarUrl
       FROM comments c
       JOIN profiles p ON p.email = c.author_email
       WHERE c.video_id = ?1
@@ -520,6 +613,24 @@ export async function getLikeState(
     .bind(videoId, email.toLowerCase())
     .first<{ liked: number }>();
   return Boolean(row);
+}
+
+export async function listLikedVideoIds(
+  videoIds: string[],
+  email: string,
+): Promise<string[]> {
+  await ensureSchema();
+  if (!videoIds.length) return [];
+  const placeholders = videoIds.map((_, index) => `?${index + 2}`).join(", ");
+  const result = await bindings()
+    .DB.prepare(
+      `SELECT video_id AS videoId
+       FROM likes
+       WHERE user_email = ?1 AND video_id IN (${placeholders})`,
+    )
+    .bind(email.toLowerCase(), ...videoIds)
+    .all<{ videoId: string }>();
+  return result.results.map((row) => row.videoId);
 }
 
 export async function toggleLike(

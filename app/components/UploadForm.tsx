@@ -1,22 +1,25 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { isQuickDuration } from "@/app/lib/quicks";
 import { MAX_VIDEO_BYTES } from "@/app/lib/limits";
 
 export function UploadForm() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"idle" | "uploading" | "saving" | "done">(
     "idle",
   );
   const [error, setError] = useState("");
 
-  function chooseFile(nextFile: File | null) {
+  async function chooseFile(nextFile: File | null) {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setError("");
     setProgress(0);
+    setDurationSeconds(null);
     if (!nextFile) {
       setFile(null);
       setPreviewUrl("");
@@ -30,13 +33,22 @@ export function UploadForm() {
       setError("Video must be smaller than 40 MB for the no-card launch.");
       return;
     }
+    const nextPreviewUrl = URL.createObjectURL(nextFile);
     setFile(nextFile);
-    setPreviewUrl(URL.createObjectURL(nextFile));
+    setPreviewUrl(nextPreviewUrl);
+    try {
+      setDurationSeconds(await readVideoDuration(nextPreviewUrl));
+    } catch {
+      setError("The browser could not read this video's duration. Export it as a browser-ready MP4 or WebM.");
+      setFile(null);
+      setPreviewUrl("");
+      URL.revokeObjectURL(nextPreviewUrl);
+    }
   }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!file) {
+    if (!file || !durationSeconds) {
       setError("Choose a video before publishing.");
       return;
     }
@@ -54,6 +66,7 @@ export function UploadForm() {
       prompt: field(form, "prompt"),
       aiDeclaration: field(form, "aiDeclaration"),
       sizeBytes: file.size,
+      durationSeconds,
     };
 
     const request = new XMLHttpRequest();
@@ -135,6 +148,13 @@ export function UploadForm() {
             <span>
               <strong>{file.name}</strong>
               <small>{(file.size / 1024 / 1024).toFixed(1)} MB</small>
+              {durationSeconds ? (
+                <small>
+                  {formatDuration(durationSeconds)} · {isQuickDuration(durationSeconds) ? "Eligible for Quicks" : "Standard video"}
+                </small>
+              ) : (
+                <small>Reading duration…</small>
+              )}
             </span>
             <button type="button" onClick={() => fileInput.current?.click()}>
               Replace
@@ -148,6 +168,7 @@ export function UploadForm() {
         <p>
           Use a browser-ready H.264 MP4 or WebM, keep it below 40 MB, and make
           sure you have the right to share every element.
+          Videos under 60 seconds also appear in Quicks automatically.
         </p>
       </div>
 
@@ -276,4 +297,26 @@ export function UploadForm() {
 function field(form: FormData, name: string): string {
   const value = form.get(name);
   return typeof value === "string" ? value : "";
+}
+
+function readVideoDuration(url: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      video.removeAttribute("src");
+      video.load();
+      if (Number.isFinite(duration) && duration > 0) resolve(duration);
+      else reject(new Error("Invalid duration"));
+    };
+    video.onerror = () => reject(new Error("Metadata could not be read"));
+    video.src = url;
+  });
+}
+
+function formatDuration(seconds: number): string {
+  const rounded = Math.ceil(seconds);
+  const minutes = Math.floor(rounded / 60);
+  return `${minutes}:${String(rounded % 60).padStart(2, "0")}`;
 }

@@ -9,6 +9,10 @@ export function GET() {
       display: "standalone",
       background_color: "#090a0c",
       theme_color: "#b8ff3d",
+      shortcuts: [
+        { name: "Quicks", short_name: "Quicks", url: "/quicks" },
+        { name: "Upload AI video", short_name: "Upload", url: "/upload" },
+      ],
     },
     {
       headers: {
