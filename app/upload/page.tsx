@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { UploadForm } from "@/app/components/UploadForm";
 import {
+  MAX_PROFILE_VIDEO_BYTES,
   MAX_VIDEO_BYTES,
   MAX_VIDEOS_PER_PROFILE,
 } from "@/app/lib/limits";
-import { getProfileByEmail, listVideos } from "@/db";
+import { getProfileByEmail, listSeries, listVideos } from "@/db";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,13 @@ export default async function UploadPage() {
   const profile = await getProfileByEmail(user.email);
   if (!profile) redirect("/settings/profile?next=/upload");
 
-  const videos = await listVideos({
-    ownerEmail: user.email,
-    limit: MAX_VIDEOS_PER_PROFILE + 1,
-  });
+  const [videos, series] = await Promise.all([
+    listVideos({ ownerEmail: user.email, limit: MAX_VIDEOS_PER_PROFILE + 1 }),
+    listSeries({ ownerEmail: user.email, limit: 100 }),
+  ]);
   const remaining = Math.max(0, MAX_VIDEOS_PER_PROFILE - videos.length);
+  const usedBytes = videos.reduce((total, video) => total + video.sizeBytes, 0);
+  const remainingBytes = Math.max(0, MAX_PROFILE_VIDEO_BYTES - usedBytes);
 
   return (
     <main className="upload-page">
@@ -32,13 +35,13 @@ export default async function UploadPage() {
           </p>
         </div>
         <div className="quota-card">
-          <span>Launch allowance</span>
+          <span>Channel storage</span>
           <strong>{remaining} of {MAX_VIDEOS_PER_PROFILE} active uploads available</strong>
-          <small>MP4 or WebM · {MAX_VIDEO_BYTES / 1024 / 1024} MB maximum</small>
+          <small>{(remainingBytes / 1024 / 1024).toFixed(1)} of {MAX_PROFILE_VIDEO_BYTES / 1024 / 1024} MB available · {MAX_VIDEO_BYTES / 1024 / 1024} MB per file</small>
         </div>
       </div>
-      {remaining > 0 ? (
-        <UploadForm />
+      {remaining > 0 && remainingBytes > 0 ? (
+        <UploadForm series={series.filter((item) => item.status === "ongoing")} remainingBytes={remainingBytes} />
       ) : (
         <div className="empty-state">
           <h3>Your active upload allowance is full</h3>

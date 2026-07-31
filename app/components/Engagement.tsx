@@ -10,6 +10,7 @@ export function Engagement({
   videoId,
   initialLikeCount,
   initialLiked,
+  initialSaved,
   initialComments,
   signedIn,
   hasProfile,
@@ -18,6 +19,7 @@ export function Engagement({
   videoId: string;
   initialLikeCount: number;
   initialLiked: boolean;
+  initialSaved: boolean;
   initialComments: Comment[];
   signedIn: boolean;
   hasProfile: boolean;
@@ -25,6 +27,7 @@ export function Engagement({
 }) {
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
+  const [saved, setSaved] = useState(initialSaved);
   const [comments, setComments] = useState(initialComments);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -83,6 +86,17 @@ export function Engagement({
     }
   }
 
+  async function toggleSaved() {
+    if (actionPath) {
+      window.location.assign(actionPath);
+      return;
+    }
+    const response = await fetch(`/api/videos/${videoId}/save`, { method: "POST" });
+    const payload = (await response.json()) as { saved?: boolean; error?: string };
+    if (response.ok && typeof payload.saved === "boolean") setSaved(payload.saved);
+    else setError(payload.error ?? "Video could not be saved.");
+  }
+
   async function addComment(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (actionPath) {
@@ -129,6 +143,9 @@ export function Engagement({
         </a>
         <button className="share-button" type="button" onClick={shareVideo}>
           {shareLabel}
+        </button>
+        <button className="share-button" type="button" aria-pressed={saved} onClick={() => void toggleSaved()}>
+          {saved ? "Saved ✓" : "Watch later"}
         </button>
       </div>
 

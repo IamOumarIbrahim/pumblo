@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { Header } from "@/app/components/Header";
 import { Sidebar } from "@/app/components/Sidebar";
+import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { DEFAULT_PROFILE_SETTINGS, getProfileSettings } from "@/db";
 import "./globals.css";
 
 const productionUrl =
@@ -62,12 +64,21 @@ export const viewport: Viewport = {
   themeColor: "#0a0b0d",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const user = await getChatGPTUser();
+  const settings = user
+    ? await getProfileSettings(user.email)
+    : DEFAULT_PROFILE_SETTINGS;
   return (
     <html lang="en">
-      <body>
+      <body
+        data-autoplay-previews={settings.autoplayPreviews ? "on" : "off"}
+        data-preview-sound={settings.previewSound ? "on" : "off"}
+        data-data-saver={settings.dataSaver ? "on" : "off"}
+        data-reduced-motion={settings.reducedMotion ? "on" : "off"}
+      >
         <Header />
         <Sidebar />
         <div className="site-content">

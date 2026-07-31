@@ -5,11 +5,16 @@ import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
 import { Avatar } from "@/app/components/Avatar";
 import { DeleteVideoButton } from "@/app/components/DeleteVideoButton";
 import { Engagement } from "@/app/components/Engagement";
+import { ReportButton } from "@/app/components/ReportButton";
 import { VideoCard } from "@/app/components/VideoCard";
+import { WatchPlayer } from "@/app/components/WatchPlayer";
 import { compactNumber, relativeTime } from "@/app/lib/format";
 import {
   getLikeState,
   getProfileByEmail,
+  getProfileSettings,
+  getWatchLaterState,
+  getWatchProgress,
   getVideo,
   incrementViews,
   listComments,
@@ -55,16 +60,28 @@ export default async function WatchPage({
   if (!video) notFound();
 
   const viewer = await getChatGPTUser();
-  const [profile, comments, liked, related, query] = await Promise.all([
+  await incrementViews(id);
+  const [profile, comments, liked, saved, related, query, settings, progress, seriesEpisodes] = await Promise.all([
     viewer ? getProfileByEmail(viewer.email) : Promise.resolve(null),
     listComments(id),
     viewer ? getLikeState(id, viewer.email) : Promise.resolve(false),
+    viewer ? getWatchLaterState(id, viewer.email) : Promise.resolve(false),
     listVideos({ category: video.category, sort: "community", limit: 5 }),
     searchParams,
-    incrementViews(id),
+    viewer ? getProfileSettings(viewer.email) : Promise.resolve(null),
+    viewer ? getWatchProgress(id, viewer.email) : Promise.resolve(null),
+    video.seriesId ? listVideos({ seriesId: video.seriesId, limit: 100 }) : Promise.resolve([]),
   ]);
   const relatedVideos = related.filter((item) => item.id !== id).slice(0, 4);
   const isOwner = viewer?.email === video.ownerEmail;
+  const episodeIndex = seriesEpisodes.findIndex((episode) => episode.id === video.id);
+  const previousEpisode = episodeIndex > 0 ? seriesEpisodes[episodeIndex - 1] : null;
+  const nextEpisode = episodeIndex >= 0 ? seriesEpisodes[episodeIndex + 1] ?? null : null;
+  const interactionPath = !viewer
+    ? chatGPTSignInPath(`/watch/${video.id}`)
+    : !profile
+      ? `/settings/profile?next=${encodeURIComponent(`/watch/${video.id}`)}`
+      : null;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoObject",
@@ -98,20 +115,24 @@ export default async function WatchPage({
 
       <div className="watch-layout">
         <section className="watch-main">
-          <div className="player-shell">
-            <video
-              src={`/media/${video.id}`}
-              controls
-              autoPlay={query.uploaded === "1"}
-              playsInline
-              preload="metadata"
-            />
-          </div>
+          <WatchPlayer
+            videoId={video.id}
+            autoPlay={query.uploaded === "1"}
+            canPersist={Boolean(profile)}
+            initialProgress={progress?.progressSeconds ?? 0}
+            autoplayNext={settings?.autoplayNext ?? true}
+            nextEpisode={nextEpisode ? { id: nextEpisode.id, title: nextEpisode.title } : null}
+          />
 
           <div className="watch-copy">
             <div className="film-flags">
               <span>{video.category}</span>
               <span>{video.generationTool}</span>
+              {video.seriesId ? (
+                <Link href={`/series/${video.seriesId}`}>
+                  {video.seriesTitle} · S{video.seasonNumber} E{video.episodeNumber}
+                </Link>
+              ) : null}
               <span className="provenance-flag">Creator-declared AI process</span>
             </div>
             <h1>{video.title}</h1>
@@ -149,6 +170,16 @@ export default async function WatchPage({
               </div>
             ) : null}
 
+            {video.seriesId ? (
+              <nav className="episode-navigation" aria-label="Series episodes">
+                <div><span>Part of</span><Link href={`/series/${video.seriesId}`}>{video.seriesTitle}</Link></div>
+                <div>
+                  {previousEpisode ? <Link className="button button-ghost" href={`/watch/${previousEpisode.id}`}>← Previous</Link> : null}
+                  {nextEpisode ? <Link className="button button-primary" href={`/watch/${nextEpisode.id}`}>Next episode →</Link> : null}
+                </div>
+              </nav>
+            ) : null}
+
             <div className="provenance-panel">
               <div>
                 <span className="section-kicker">Optional creator feature</span>
@@ -166,12 +197,18 @@ export default async function WatchPage({
                   <p>{video.prompt}</p>
                 </details>
               ) : null}
+              {video.sourceCreditUrl ? (
+                <p className="source-credit">
+                  Creator credit: <a href={video.sourceCreditUrl} rel="nofollow ugc noreferrer" target="_blank">open source or inspiration ↗</a>
+                </p>
+              ) : null}
             </div>
 
             <Engagement
               videoId={video.id}
               initialLikeCount={video.likeCount}
               initialLiked={liked}
+              initialSaved={saved}
               initialComments={comments}
               signedIn={Boolean(viewer)}
               hasProfile={Boolean(profile)}
@@ -183,7 +220,9 @@ export default async function WatchPage({
                 videoId={video.id}
                 returnTo={`/profile/${video.ownerHandle}`}
               />
-            ) : null}
+            ) : (
+              <ReportButton videoId={video.id} actionPath={interactionPath} />
+            )}
           </div>
         </section>
 

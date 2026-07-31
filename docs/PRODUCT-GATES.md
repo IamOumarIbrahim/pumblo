@@ -4,91 +4,74 @@ Pumblo uses one deliberately rude filter before a feature earns release scope:
 
 > **“Bro, who's even gonna use this?”**
 
-A gate fails when its answer relies on imaginary scale, fake activity, or a claim the system cannot observe.
+A gate fails when its answer depends on imaginary scale, fake activity, vendor drama, or a claim the system cannot observe.
 
 ## Gate 0 — Named audience
 
-**Question:** Who needs this today?
+**Pass:** people making or intentionally watching AI video need an independent public home after generation.
 
-**Pass:** People who make or intentionally seek AI video want one focused place to publish, discover, and interact across generation tools.
-
-**Fail:** “Anyone who likes video” or a process-documentation audience disguised as a social network.
-
-**Evidence:** Home, metadata, README, and upload copy consistently name an AI-only video platform.
+**Fail:** “anyone who likes video,” or a process-documentation audience disguised as a social network.
 
 ## Gate 1 — Core video loop
 
-**Question:** Does the main product work like a video-sharing platform?
+**Pass:** guest feed/playback/search, creator uploads/profiles, likes/comments/follows, Following, and Quicks.
 
-**Pass:** Public feed, playback, uploads, customizable creator channels, search, likes, comments, follows, Following, and an interactive under-60-second Quicks feed.
+**Fail:** a static portfolio builder with a feed bolted on.
 
-**Fail:** A static film-page builder with a feed bolted on.
+## Gate 2 — Return value
 
-**Evidence:** Release tests assert each page, route, persistence path, and market-facing promise.
+**Pass:** series, resume, next episode, Watch Later, creator notifications, and creator-facing evidence give people a reason to return.
 
-## Gate 2 — Cold start
+**Fail:** disconnected 15-second clips are the only loop.
 
-**Question:** Is the empty network honest and actionable?
+## Gate 3 — Cold start
 
-**Pass:** The empty feed asks for the first AI video and explains that viewers can watch without accounts.
+**Pass:** empty states honestly invite the first upload; no fake creators or inflated counters.
 
-**Fail:** Seeded fake creators or inflated activity pretend an audience exists.
+## Gate 4 — Friction
 
-**Evidence:** Production launches with no fake records; source tests check the empty-state and upload action.
+**Pass:** viewing stays public; writes prompt Sign in with ChatGPT; profile setup requires only handle/display name; infrastructure is already configured without card setup.
 
-## Gate 3 — Friction
+**Fail:** viewing walls or a stack of third-party accounts before value.
 
-**Question:** What can be removed before asking for commitment?
+## Gate 5 — Honest trust
 
-**Pass:** Browsing, search, playback, creator pages, Quicks, and sharing need no account. A write action prompts Sign in with ChatGPT. Profile setup needs two text fields; avatar/banner cropping remains optional. Tool input is free text. The configured deployment needs no new card or third-party secret.
+**Pass:** distinguish dispatcher-authenticated identity, server-checked media facts, persisted activity, and creator declarations.
 
-**Fail:** Sign-in walls viewing or setup begins with infrastructure accounts.
+**Fail:** “provably AI,” “human verified,” “lossless compression,” or Story Tier as art quality.
 
-## Gate 4 — Honest trust
+## Gate 6 — Abuse resistance
 
-**Question:** What does Pumblo actually know?
+**Pass:** server-read runtime, server timestamps, unique episode slots, duplicate-file hashes, one-like/follow/save/report constraints, bounded inputs, and owner checks.
 
-**Pass:** It knows the dispatcher-authenticated identity, the submitted metadata, and the stored file. The UI says `creator-declared`.
+**Fail:** a tier or activity signal controlled solely by client metadata.
 
-**Fail:** “Provably AI,” “human verified,” or an artistic-quality score.
+## Gate 7 — Safety
 
-## Gate 5 — Distribution and queryability
+**Pass:** viewers can submit categorized reports; missing review/appeal/block systems are disclosed.
 
-**Question:** Can the public web find and share the work?
+**Fail:** presenting report intake as a complete moderation program.
 
-**Pass:** Canonical video/channel URLs, public search APIs, creator/video sitemap entries, robots policy, `VideoObject` JSON-LD, Open Graph metadata, and progressive sharing.
+## Gate 8 — Distribution
 
-**Fail:** Sharing means telling someone to search a title inside the app.
+**Pass:** canonical video/profile/series URLs, public search, sitemap, robots, `VideoObject`, Open Graph, and progressive sharing.
 
-## Gate 6 — Network behavior without fake authority
+## Gate 9 — Capacity
 
-**Question:** Can discovery use real activity without pretending to judge art?
+**Pass:** 100 creators × (80 MiB video total + 6 MiB profile media) = 8,600 MiB; 12 slots enable episodes without expanding the total.
 
-**Pass:** Trending uses persisted likes, comments, capped views, and publication-time tie-breaking. Following uses explicit creator relationships.
+**Fail:** “handles 100 users” without resource math or enforcement.
 
-**Fail:** A hidden “quality” grade.
+## Gate 10 — Evidence
 
-## Gate 7 — Capacity
-
-**Question:** Is the 100-user goal bounded in code?
-
-**Pass:** 100 creators × (2 active uploads × 40 MiB + 2 profile images × 3 MiB) = 8,600 MiB; deletion/replacement recovers storage. There is no user-101 signup wall.
-
-**Fail:** “Handles 100 users” without resource math or enforceable limits.
-
-## Gate 8 — Evidence before launch
-
-**Question:** Which check catches a broken promise?
-
-**Pass:** `npm run verify`, CI, migration inspection, and post-deployment HTTP/API probes.
-
-**Fail:** A claim exists only in copy.
+**Pass:** `npm run verify`, CI, unit tests for tier/container parsing, migration inspection, local journey checks, and post-deployment HTTP/API probes.
 
 ## Change template
 
 1. Which named viewer or creator problem changes?
-2. Does it strengthen watching, publishing, discovery, or interaction?
+2. Does it strengthen watching, publishing, connected storytelling, discovery, or interaction?
 3. Which barrier is added or removed?
-4. What can Pumblo truthfully observe?
-5. What is the capacity impact?
-6. Which automated check proves the result?
+4. What can Pumblo truthfully observe or verify?
+5. How can a bad actor game it, and which constraint makes that harder?
+6. What is the capacity and privacy impact?
+7. Which automated check proves the result?

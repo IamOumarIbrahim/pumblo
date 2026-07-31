@@ -1,6 +1,13 @@
 import type { Video } from "@/db";
 
-export type PublicVideo = Omit<Video, "ownerEmail" | "objectKey">;
+export type PublicVideo = Omit<
+  Video,
+  | "ownerEmail"
+  | "objectKey"
+  | "contentHash"
+  | "originalSizeBytes"
+  | "storageSavingsBytes"
+>;
 
 export function toPublicVideo(video: Video): PublicVideo {
   return {
@@ -15,6 +22,12 @@ export function toPublicVideo(video: Video): PublicVideo {
     contentType: video.contentType,
     sizeBytes: video.sizeBytes,
     durationSeconds: video.durationSeconds,
+    seriesId: video.seriesId,
+    seriesTitle: video.seriesTitle,
+    seriesStatus: video.seriesStatus,
+    seasonNumber: video.seasonNumber,
+    episodeNumber: video.episodeNumber,
+    sourceCreditUrl: video.sourceCreditUrl,
     provenanceStatus: video.provenanceStatus,
     views: video.views,
     createdAt: video.createdAt,
@@ -26,4 +39,3 @@ export function toPublicVideo(video: Video): PublicVideo {
     commentCount: video.commentCount,
   };
 }
-

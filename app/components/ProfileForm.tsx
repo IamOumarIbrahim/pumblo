@@ -9,6 +9,11 @@ type ProfileDraft = {
   bio: string;
   location: string;
   website: string;
+  chatgptUrl: string;
+  discordUrl: string;
+  xUrl: string;
+  githubUrl: string;
+  youtubeUrl: string;
   avatarColor: string;
   avatarUrl: string;
   bannerUrl: string;
@@ -44,6 +49,11 @@ export function ProfileForm({
       bio: "",
       location: "",
       website: "",
+      chatgptUrl: "",
+      discordUrl: "",
+      xUrl: "",
+      githubUrl: "",
+      youtubeUrl: "",
       avatarColor: colors[0],
       avatarUrl: "",
       bannerUrl: "",
@@ -79,6 +89,11 @@ export function ProfileForm({
           bio: form.bio,
           location: form.location,
           website: form.website,
+          chatgptUrl: form.chatgptUrl,
+          discordUrl: form.discordUrl,
+          xUrl: form.xUrl,
+          githubUrl: form.githubUrl,
+          youtubeUrl: form.youtubeUrl,
           avatarColor: form.avatarColor,
         }),
       });
@@ -150,6 +165,66 @@ export function ProfileForm({
           <small>Lowercase letters, numbers, and underscores.</small>
         </label>
       </div>
+
+      <fieldset className="profile-links-fieldset">
+        <legend>Creator links <i>optional</i></legend>
+        <p>
+          Add the public places where viewers can find your work. These are links,
+          not verified endorsements or additional sign-in methods.
+        </p>
+        <div className="form-split">
+          <label>
+            <span>ChatGPT or public GPT</span>
+            <input
+              type="url"
+              maxLength={200}
+              value={form.chatgptUrl}
+              onChange={(event) => update("chatgptUrl", event.target.value)}
+              placeholder="https://chatgpt.com/g/..."
+            />
+          </label>
+          <label>
+            <span>Discord</span>
+            <input
+              type="url"
+              maxLength={200}
+              value={form.discordUrl}
+              onChange={(event) => update("discordUrl", event.target.value)}
+              placeholder="https://discord.gg/..."
+            />
+          </label>
+          <label>
+            <span>X</span>
+            <input
+              type="url"
+              maxLength={200}
+              value={form.xUrl}
+              onChange={(event) => update("xUrl", event.target.value)}
+              placeholder="https://x.com/creator"
+            />
+          </label>
+          <label>
+            <span>GitHub</span>
+            <input
+              type="url"
+              maxLength={200}
+              value={form.githubUrl}
+              onChange={(event) => update("githubUrl", event.target.value)}
+              placeholder="https://github.com/creator"
+            />
+          </label>
+          <label>
+            <span>YouTube</span>
+            <input
+              type="url"
+              maxLength={200}
+              value={form.youtubeUrl}
+              onChange={(event) => update("youtubeUrl", event.target.value)}
+              placeholder="https://youtube.com/@creator"
+            />
+          </label>
+        </div>
+      </fieldset>
 
       <label>
         <span>Bio <i>optional</i></span>

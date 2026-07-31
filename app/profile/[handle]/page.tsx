@@ -6,11 +6,15 @@ import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
 import { Avatar } from "@/app/components/Avatar";
 import { FollowButton } from "@/app/components/FollowButton";
 import { VideoCard } from "@/app/components/VideoCard";
+import { StoryTier } from "@/app/components/StoryTier";
 import { profileMediaUrl } from "@/app/lib/profile-media";
 import {
   getFollowState,
   getProfileByEmail,
   getProfileByHandle,
+  getProfileSettings,
+  getCreatorTier,
+  listSeries,
   listVideos,
 } from "@/db";
 
@@ -49,11 +53,14 @@ export default async function ProfilePage({
 
   const viewer = await getChatGPTUser();
   const viewerProfile = viewer ? await getProfileByEmail(viewer.email) : null;
-  const [videos, following] = await Promise.all([
+  const [videos, following, settings, series, tier] = await Promise.all([
     listVideos({ ownerEmail: profile.email, sort: "newest" }),
     viewer && viewer.email !== profile.email
       ? getFollowState(profile.email, viewer.email)
       : Promise.resolve(false),
+    getProfileSettings(profile.email),
+    listSeries({ ownerEmail: profile.email, limit: 100 }),
+    getCreatorTier(profile.email),
   ]);
   const isOwner = viewer?.email === profile.email;
   const followActionPath = !viewer
@@ -107,29 +114,55 @@ export default async function ProfilePage({
               <FollowButton
                 handle={profile.handle}
                 initialFollowing={following}
-                initialCount={profile.followerCount}
+                initialCount={settings.showFollowerCounts ? profile.followerCount : 0}
                 actionPath={followActionPath}
+                showCount={settings.showFollowerCounts}
               />
             )}
           </div>
           <p className="profile-bio">
             {profile.bio || "This creator is letting the videos speak first."}
           </p>
+          <StoryTier tier={tier} compact />
           <div className="profile-details">
             <span>
               <b>{videos.length}</b> {videos.length === 1 ? "video" : "videos"}
             </span>
-            <span><b>{profile.followerCount}</b> followers</span>
-            <span><b>{profile.followingCount}</b> following</span>
-            {profile.location ? <span>{profile.location}</span> : null}
+            {settings.showFollowerCounts ? <span><b>{profile.followerCount}</b> followers</span> : null}
+            {settings.showFollowerCounts ? <span><b>{profile.followingCount}</b> following</span> : null}
+            {settings.showLocation && profile.location ? <span>{profile.location}</span> : null}
             {profile.website ? (
-              <a href={profile.website} rel="noreferrer" target="_blank">
+              <a href={profile.website} rel="nofollow ugc noreferrer" target="_blank">
                 Website ↗
               </a>
             ) : null}
           </div>
+          {settings.showSocials ? (
+            <div className="profile-socials" aria-label="Creator links">
+              {profile.chatgptUrl ? <a href={profile.chatgptUrl} rel="nofollow ugc noreferrer" target="_blank">ChatGPT ↗</a> : null}
+              {profile.discordUrl ? <a href={profile.discordUrl} rel="nofollow ugc noreferrer" target="_blank">Discord ↗</a> : null}
+              {profile.xUrl ? <a href={profile.xUrl} rel="nofollow ugc noreferrer" target="_blank">X ↗</a> : null}
+              {profile.githubUrl ? <a href={profile.githubUrl} rel="nofollow ugc noreferrer" target="_blank">GitHub ↗</a> : null}
+              {profile.youtubeUrl ? <a href={profile.youtubeUrl} rel="nofollow ugc noreferrer" target="_blank">YouTube ↗</a> : null}
+            </div>
+          ) : null}
         </div>
       </section>
+
+      {series.length ? (
+        <section className="profile-series">
+          <div className="section-heading"><div><span className="section-kicker">Connected stories</span><h2>Series</h2></div></div>
+          <div className="series-card-grid">
+            {series.map((item) => (
+              <Link href={`/series/${item.id}`} key={item.id}>
+                <span>{item.status} · {item.episodeCount} episodes</span>
+                <h3>{item.title}</h3>
+                <p>{item.description || "Open the series and watch in order."}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="profile-films">
         <div className="section-heading">

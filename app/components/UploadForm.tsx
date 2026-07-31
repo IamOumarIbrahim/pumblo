@@ -2,13 +2,29 @@
 
 import { useRef, useState } from "react";
 import { isQuickDuration } from "@/app/lib/quicks";
-import { MAX_VIDEO_BYTES } from "@/app/lib/limits";
+import {
+  MAX_OPTIMIZATION_SOURCE_BYTES,
+  MAX_VIDEO_BYTES,
+} from "@/app/lib/limits";
+import { formatDuration } from "@/app/lib/format";
+import type { Series } from "@/db";
 
-export function UploadForm() {
+export function UploadForm({
+  series,
+  remainingBytes,
+}: {
+  series: Series[];
+  remainingBytes: number;
+}) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [durationSeconds, setDurationSeconds] = useState<number | null>(null);
+  const [originalSizeBytes, setOriginalSizeBytes] = useState(0);
+  const [seriesId, setSeriesId] = useState("");
+  const [optimizing, setOptimizing] = useState(false);
+  const [optimizationProgress, setOptimizationProgress] = useState(0);
+  const [optimizationNote, setOptimizationNote] = useState("");
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"idle" | "uploading" | "saving" | "done">(
     "idle",
@@ -20,6 +36,8 @@ export function UploadForm() {
     setError("");
     setProgress(0);
     setDurationSeconds(null);
+    setOptimizationNote("");
+    setOptimizationProgress(0);
     if (!nextFile) {
       setFile(null);
       setPreviewUrl("");
@@ -29,15 +47,19 @@ export function UploadForm() {
       setError("Use an MP4 or WebM video.");
       return;
     }
-    if (nextFile.size > MAX_VIDEO_BYTES) {
-      setError("Video must be smaller than 40 MB for the no-card launch.");
+    if (nextFile.size > MAX_OPTIMIZATION_SOURCE_BYTES) {
+      setError("Choose a source smaller than 200 MB.");
       return;
     }
     const nextPreviewUrl = URL.createObjectURL(nextFile);
     setFile(nextFile);
+    setOriginalSizeBytes(nextFile.size);
     setPreviewUrl(nextPreviewUrl);
     try {
       setDurationSeconds(await readVideoDuration(nextPreviewUrl));
+      if (nextFile.size > MAX_VIDEO_BYTES) {
+        setOptimizationNote("This source is over 40 MB. Optimize it before publishing.");
+      }
     } catch {
       setError("The browser could not read this video's duration. Export it as a browser-ready MP4 or WebM.");
       setFile(null);
@@ -46,10 +68,53 @@ export function UploadForm() {
     }
   }
 
+  async function optimize() {
+    if (!file || !durationSeconds) return;
+    setOptimizing(true);
+    setError("");
+    setOptimizationNote("Optimizing locally. Nothing has been uploaded yet.");
+    try {
+      const optimized = await optimizeVideo(file, durationSeconds, setOptimizationProgress);
+      if (!optimized || optimized.size >= file.size * 0.92) {
+        setOptimizationNote("The original is already efficient, so Pumblo kept it unchanged.");
+      } else {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        const nextUrl = URL.createObjectURL(optimized);
+        const nextDuration = await readVideoDuration(nextUrl);
+        if (
+          Math.abs(nextDuration - durationSeconds) >
+          Math.max(1.5, durationSeconds * 0.02)
+        ) {
+          URL.revokeObjectURL(nextUrl);
+          throw new Error("Optimized runtime changed");
+        }
+        setFile(optimized);
+        setPreviewUrl(nextUrl);
+        setDurationSeconds(nextDuration);
+        setOptimizationNote(
+          `Storage optimized: ${formatBytes(originalSizeBytes)} → ${formatBytes(optimized.size)} with the original runtime preserved.`,
+        );
+      }
+    } catch {
+      setOptimizationNote("This browser could not optimize the file safely. The original remains selected.");
+    } finally {
+      setOptimizing(false);
+      setOptimizationProgress(0);
+    }
+  }
+
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file || !durationSeconds) {
       setError("Choose a video before publishing.");
+      return;
+    }
+    if (file.size > MAX_VIDEO_BYTES || file.size > remainingBytes) {
+      setError(
+        file.size > MAX_VIDEO_BYTES
+          ? "Optimize this file below 40 MB before publishing."
+          : "This file is larger than your remaining channel storage.",
+      );
       return;
     }
 
@@ -67,6 +132,11 @@ export function UploadForm() {
       aiDeclaration: field(form, "aiDeclaration"),
       sizeBytes: file.size,
       durationSeconds,
+      seriesId: field(form, "seriesId"),
+      seasonNumber: Number(field(form, "seasonNumber")) || 1,
+      episodeNumber: Number(field(form, "episodeNumber")) || 0,
+      sourceCreditUrl: field(form, "sourceCreditUrl"),
+      originalSizeBytes: Math.max(originalSizeBytes, file.size),
     };
 
     const request = new XMLHttpRequest();
@@ -163,12 +233,26 @@ export function UploadForm() {
         ) : null}
       </div>
 
+      {file && durationSeconds ? (
+        <div className="optimizer-panel">
+          <div>
+            <strong>Smart storage optimizer</strong>
+            <p>Re-encodes locally to WebM at a conservative bitrate, then keeps the result only when runtime is preserved and savings exceed 8%.</p>
+          </div>
+          <button className="button button-ghost" type="button" disabled={optimizing} onClick={() => void optimize()}>
+            {optimizing ? `Optimizing ${optimizationProgress}%` : "Optimize file"}
+          </button>
+          {optimizationNote ? <small role="status">{optimizationNote}</small> : null}
+        </div>
+      ) : null}
+
       <div className="upload-recipe" aria-label="Upload checklist">
         <span>Before you publish</span>
         <p>
           Use a browser-ready H.264 MP4 or WebM, keep it below 40 MB, and make
           sure you have the right to share every element.
-          Videos under 60 seconds also appear in Quicks automatically.
+          Videos under 60 seconds also appear in Quicks automatically. Numbered
+          series episodes at least 60 seconds can qualify toward Story Tier.
         </p>
       </div>
 
@@ -183,6 +267,27 @@ export function UploadForm() {
             placeholder="Give the video a memorable title"
           />
         </label>
+
+        <label>
+          <span>Series <i>optional</i></span>
+          <select name="seriesId" value={seriesId} onChange={(event) => setSeriesId(event.target.value)}>
+            <option value="">Standalone video</option>
+            {series.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+          </select>
+          <small>{series.length ? "Numbered episodes appear together; episodes 60 seconds or longer can count toward Story Tier." : "Create a series in Studio before assigning an episode."}</small>
+        </label>
+        {seriesId ? (
+          <div className="episode-number-fields">
+            <label>
+              <span>Season</span>
+              <input required name="seasonNumber" type="number" min="1" max="99" defaultValue="1" />
+            </label>
+            <label>
+              <span>Episode</span>
+              <input required name="episodeNumber" type="number" min="1" max="999" defaultValue="1" />
+            </label>
+          </div>
+        ) : null}
         <label className="full-field">
           <span>Description</span>
           <textarea
@@ -191,6 +296,11 @@ export function UploadForm() {
             maxLength={1000}
             placeholder="What should viewers know before they press play?"
           />
+        </label>
+        <label className="full-field">
+          <span>Source credit or inspiration link <i>optional</i></span>
+          <input name="sourceCreditUrl" type="url" maxLength={300} placeholder="https://original-creator.example/work" />
+          <small>Credit the work, reference, or collaborator that helped shape this video.</small>
         </label>
 
         <label>
@@ -281,7 +391,7 @@ export function UploadForm() {
       <div className="publish-row">
         <button
           className="button button-primary button-large"
-          disabled={phase !== "idle"}
+          disabled={phase !== "idle" || optimizing}
         >
           {phase === "idle" ? "Publish video" : "Publishing…"}
         </button>
@@ -315,8 +425,82 @@ function readVideoDuration(url: string): Promise<number> {
   });
 }
 
-function formatDuration(seconds: number): string {
-  const rounded = Math.ceil(seconds);
-  const minutes = Math.floor(rounded / 60);
-  return `${minutes}:${String(rounded % 60).padStart(2, "0")}`;
+async function optimizeVideo(
+  file: File,
+  durationSeconds: number,
+  onProgress: (progress: number) => void,
+): Promise<File | null> {
+  if (typeof MediaRecorder === "undefined") throw new Error("MediaRecorder unavailable");
+  const mimeType = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+  ].find((type) => MediaRecorder.isTypeSupported(type));
+  if (!mimeType) throw new Error("WebM optimization unavailable");
+
+  const sourceUrl = URL.createObjectURL(file);
+  const player = document.createElement("video") as HTMLVideoElement & {
+    captureStream?: () => MediaStream;
+    mozCaptureStream?: () => MediaStream;
+  };
+  player.src = sourceUrl;
+  player.preload = "auto";
+  player.playsInline = true;
+  player.muted = true;
+  player.style.cssText = "position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0";
+  document.body.appendChild(player);
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      player.onloadeddata = () => resolve();
+      player.onerror = () => reject(new Error("Source could not be decoded"));
+    });
+    const capture = player.captureStream ?? player.mozCaptureStream;
+    if (!capture) throw new Error("Stream capture unavailable");
+    const stream = capture.call(player);
+    const sourceBitrate = (file.size * 8) / Math.max(1, durationSeconds);
+    const targetBitrate = Math.round(
+      Math.max(700_000, Math.min(5_000_000, sourceBitrate * 0.76)),
+    );
+    const chunks: BlobPart[] = [];
+    const recorder = new MediaRecorder(stream, {
+      mimeType,
+      videoBitsPerSecond: targetBitrate,
+      audioBitsPerSecond: 128_000,
+    });
+    const output = await new Promise<Blob>((resolve, reject) => {
+      const timer = window.setInterval(() => {
+        onProgress(Math.min(99, Math.round((player.currentTime / durationSeconds) * 100)));
+      }, 500);
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunks.push(event.data);
+      };
+      recorder.onerror = () => {
+        window.clearInterval(timer);
+        reject(new Error("Optimization failed"));
+      };
+      recorder.onstop = () => {
+        window.clearInterval(timer);
+        onProgress(100);
+        resolve(new Blob(chunks, { type: mimeType }));
+      };
+      player.onended = () => recorder.stop();
+      recorder.start(1_000);
+      void player.play().catch((error) => {
+        recorder.stop();
+        reject(error);
+      });
+    });
+    if (!output.size) throw new Error("Empty optimized file");
+    const base = file.name.replace(/\.[^.]+$/, "") || "pumblo-video";
+    return new File([output], `${base}.optimized.webm`, { type: "video/webm" });
+  } finally {
+    player.pause();
+    player.remove();
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+function formatBytes(bytes: number): string {
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }

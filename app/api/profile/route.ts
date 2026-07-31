@@ -27,6 +27,31 @@ export async function POST(request: Request) {
     const bio = clean(body.bio, 280);
     const location = clean(body.location, 60);
     const website = normalizeWebsite(clean(body.website, 160));
+    const chatgptUrl = normalizeSocial(
+      clean(body.chatgptUrl, 200),
+      ["chatgpt.com"],
+      "ChatGPT",
+    );
+    const discordUrl = normalizeSocial(
+      clean(body.discordUrl, 200),
+      ["discord.com", "discord.gg"],
+      "Discord",
+    );
+    const xUrl = normalizeSocial(
+      clean(body.xUrl, 200),
+      ["x.com", "twitter.com"],
+      "X",
+    );
+    const githubUrl = normalizeSocial(
+      clean(body.githubUrl, 200),
+      ["github.com"],
+      "GitHub",
+    );
+    const youtubeUrl = normalizeSocial(
+      clean(body.youtubeUrl, 200),
+      ["youtube.com", "youtu.be"],
+      "YouTube",
+    );
     const avatarColor = clean(body.avatarColor, 10);
 
     if (!/^[a-z0-9_]{3,24}$/.test(handle)) {
@@ -52,6 +77,11 @@ export async function POST(request: Request) {
       bio,
       location,
       website,
+      chatgptUrl,
+      discordUrl,
+      xUrl,
+      githubUrl,
+      youtubeUrl,
       avatarColor,
     });
     return Response.json({ profile });
@@ -76,5 +106,23 @@ function normalizeWebsite(value: string): string {
     return url.toString();
   } catch {
     throw new Error("Enter a valid website address.");
+  }
+}
+
+function normalizeSocial(value: string, domains: string[], label: string): string {
+  if (!value) return "";
+  const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    const url = new URL(candidate);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (
+      url.protocol !== "https:" ||
+      !domains.some((domain) => host === domain || host.endsWith(`.${domain}`))
+    ) {
+      throw new Error();
+    }
+    return url.toString();
+  } catch {
+    throw new Error(`Enter a valid ${label} link.`);
   }
 }

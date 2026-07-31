@@ -1,0 +1,2 @@
+ALTER TABLE `videos` ADD `content_hash` text DEFAULT '' NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `videos_owner_content_hash_unique` ON `videos` (`owner_email`,`content_hash`) WHERE "videos"."content_hash" <> '';

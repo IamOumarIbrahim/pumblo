@@ -1,6 +1,6 @@
 {
   "name": "pumblo",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "description": "An AI-only video-sharing platform for watching, uploading, and interacting with AI video.",

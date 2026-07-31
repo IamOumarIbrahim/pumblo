@@ -40,6 +40,11 @@ export default async function ProfileSettingsPage({
                 bio: profile.bio,
                 location: profile.location,
                 website: profile.website,
+                chatgptUrl: profile.chatgptUrl,
+                discordUrl: profile.discordUrl,
+                xUrl: profile.xUrl,
+                githubUrl: profile.githubUrl,
+                youtubeUrl: profile.youtubeUrl,
                 avatarColor: profile.avatarColor,
                 avatarUrl: profile.avatarObjectKey
                   ? profileMediaUrl(profile.handle, "avatar", profile.updatedAt)

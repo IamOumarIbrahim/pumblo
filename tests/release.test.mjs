@@ -20,7 +20,8 @@ test("the 100-creator launch has enforceable media guards and no signup wall", a
   const limits = await text("app/lib/limits.ts");
   assert.doesNotMatch(database, /MAX_PROFILES|SELECT COUNT\(\*\) AS count FROM profiles/);
   assert.match(limits, /LAUNCH_CREATOR_TARGET = 100/);
-  assert.match(limits, /MAX_VIDEOS_PER_PROFILE = 2/);
+  assert.match(limits, /MAX_VIDEOS_PER_PROFILE = 12/);
+  assert.match(limits, /MAX_PROFILE_VIDEO_BYTES = 80 \* 1024 \* 1024/);
   assert.match(limits, /MAX_VIDEO_BYTES = 40 \* 1024 \* 1024/);
   assert.match(await text("app/api/videos/route.ts"), /MAX_VIDEOS_PER_PROFILE/);
 });
@@ -55,6 +56,13 @@ test("the promised two-person journey has server routes", async () => {
     "app/api/videos/[id]/comments/route.ts",
     "app/api/videos/[id]/route.ts",
     "app/api/videos/[id]/view/route.ts",
+    "app/api/videos/[id]/save/route.ts",
+    "app/api/videos/[id]/progress/route.ts",
+    "app/api/videos/[id]/report/route.ts",
+    "app/api/settings/route.ts",
+    "app/api/series/route.ts",
+    "app/api/notifications/read/route.ts",
+    "app/api/account/export/route.ts",
     "app/api/quicks/route.ts",
     "app/api/profile/media/[kind]/route.ts",
     "app/api/profiles/[handle]/follow/route.ts",
@@ -62,6 +70,12 @@ test("the promised two-person journey has server routes", async () => {
     "app/robots.txt/route.ts",
     "app/sitemap.xml/route.ts",
     "app/favicon.svg/route.ts",
+    "app/library/page.tsx",
+    "app/notifications/page.tsx",
+    "app/settings/page.tsx",
+    "app/studio/page.tsx",
+    "app/studio/series/page.tsx",
+    "app/series/[id]/page.tsx",
   ];
   await Promise.all(paths.map((path) => stat(new URL(path, root))));
 });
@@ -86,6 +100,7 @@ test("profiles support cropped avatar and banner create, update, read, and remov
   assert.match(mediaRead, /mediaBucket\(\)\.get/);
   assert.match(schema, /avatarObjectKey/);
   assert.match(schema, /bannerObjectKey/);
+  assert.match(await text("db/index.ts"), /\?13, \?14\)/);
 });
 
 test("Quicks is a strict, paginated, keyboard-accessible community feed", async () => {
@@ -119,6 +134,82 @@ test("migration 0003 adds durable profile media references and video duration", 
   assert.match(migration, /avatar_object_key/);
   assert.match(migration, /banner_object_key/);
   assert.match(migration, /duration_seconds/);
+});
+
+test("migration 0004 adds durable series, settings, library, notifications, reports, and episode uniqueness", async () => {
+  const migration = await text("drizzle/0004_short_blizzard.sql");
+  assert.match(migration, /CREATE TABLE `series`/);
+  assert.match(migration, /CREATE TABLE `profile_settings`/);
+  assert.match(migration, /CREATE TABLE `watch_later`/);
+  assert.match(migration, /CREATE TABLE `watch_progress`/);
+  assert.match(migration, /CREATE TABLE `notifications`/);
+  assert.match(migration, /CREATE TABLE `reports`/);
+  assert.match(migration, /videos_series_episode_unique/);
+});
+
+test("migration 0005 adds duplicate-file protection per channel", async () => {
+  const migration = await text("drizzle/0005_lucky_khan.sql");
+  assert.match(migration, /content_hash/);
+  assert.match(migration, /videos_owner_content_hash_unique/);
+});
+
+test("video cards provide inline pointer previews with an audible user fallback", async () => {
+  const card = await text("app/components/VideoCard.tsx");
+  assert.match(card, /onPointerEnter/);
+  assert.match(card, /player\.muted = !wantsSound/);
+  assert.match(card, /Click for sound/);
+  assert.match(card, /playsInline/);
+  assert.doesNotMatch(card, /requestFullscreen/);
+});
+
+test("Story Tier is structural, server-runtime-verified, and resistant to easy numbering abuse", async () => {
+  const tier = await text("app/lib/creator-tier.ts");
+  const upload = await text("app/api/videos/route.ts");
+  const schema = await text("db/schema.ts");
+  assert.match(tier, /durationSeconds < 60/);
+  assert.match(tier, /publishingSpanDays/);
+  assert.match(upload, /readContainerDuration/);
+  assert.match(upload, /durationsAgree/);
+  assert.match(schema, /videos_series_episode_unique/);
+  assert.match(schema, /videos_owner_content_hash_unique/);
+  assert.match(upload, /SHA-256/);
+});
+
+test("profiles expose durable creator links and configurable playback, content, notification, and privacy controls", async () => {
+  const profile = await text("app/components/ProfileForm.tsx");
+  const settings = await text("app/components/SettingsForm.tsx");
+  const schema = await text("db/schema.ts");
+  assert.match(profile, /ChatGPT/);
+  assert.match(profile, /Discord/);
+  assert.match(profile, />X</);
+  assert.match(profile, /GitHub/);
+  assert.match(schema, /profileSettings/);
+  assert.match(settings, /Playback & performance/);
+  assert.match(settings, /Notifications/);
+  assert.match(settings, /Public profile privacy/);
+});
+
+test("the retention layer includes Watch Later, resume, Studio, activity notifications, and reporting", async () => {
+  const database = await text("db/index.ts");
+  const player = await text("app/components/WatchPlayer.tsx");
+  const report = await text("app/components/ReportButton.tsx");
+  assert.match(database, /toggleWatchLater/);
+  assert.match(database, /saveWatchProgress/);
+  assert.match(database, /getStudioSnapshot/);
+  assert.match(database, /listNotifications/);
+  assert.match(database, /reportVideo/);
+  assert.match(player, /initialProgress/);
+  assert.match(report, /api\/videos\/\$\{videoId\}\/report/);
+});
+
+test("the storage optimizer is local, conservative, optional, and server-checked", async () => {
+  const upload = await text("app/components/UploadForm.tsx");
+  const route = await text("app/api/videos/route.ts");
+  assert.match(upload, /MediaRecorder/);
+  assert.match(upload, /captureStream/);
+  assert.match(upload, /optimized\.size >= file\.size \* 0\.92/);
+  assert.match(upload, /original runtime preserved/);
+  assert.match(route, /storedForVerification\.arrayBuffer/);
 });
 
 test("the main product is an AI-only video network", async () => {
@@ -181,7 +272,8 @@ test("public query APIs never expose identity emails or storage keys", async () 
     videoApi.indexOf("export async function POST"),
   );
   assert.doesNotMatch(videoGet, /ownerEmail|objectKey/);
-  assert.doesNotMatch(profileApi, /profile\.email/);
+  assert.doesNotMatch(await text("app/lib/public-video.ts"), /originalSizeBytes:|storageSavingsBytes:/);
+  assert.doesNotMatch(profileApi, /\bemail\s*:/);
   assert.match(profileApi, /handle: profile\.handle/);
 });
 

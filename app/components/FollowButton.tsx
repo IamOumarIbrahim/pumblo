@@ -7,11 +7,13 @@ export function FollowButton({
   initialFollowing,
   initialCount,
   actionPath,
+  showCount = true,
 }: {
   handle: string;
   initialFollowing: boolean;
   initialCount: number;
   actionPath: string | null;
+  showCount?: boolean;
 }) {
   const [following, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(initialCount);
@@ -20,7 +22,7 @@ export function FollowButton({
 
   async function toggle() {
     if (actionPath) {
-      window.location.href = actionPath;
+      window.location.assign(actionPath);
       return;
     }
     setBusy(true);
@@ -53,9 +55,8 @@ export function FollowButton({
       >
         {busy ? "Saving…" : following ? "Following" : "Follow"}
       </button>
-      <small>{count} {count === 1 ? "follower" : "followers"}</small>
+      {showCount ? <small>{count} {count === 1 ? "follower" : "followers"}</small> : null}
       {error ? <span className="form-error">{error}</span> : null}
     </div>
   );
 }
-

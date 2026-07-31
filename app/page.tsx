@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { VideoCard } from "@/app/components/VideoCard";
-import { listProfiles, listVideos } from "@/db";
+import { getProfileSettings, listProfiles, listVideos } from "@/db";
 import { profileMediaUrl } from "@/app/lib/profile-media";
+import { getChatGPTUser } from "@/app/chatgpt-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +25,10 @@ export default async function Home({
   const query = params.q?.trim().slice(0, 80) ?? "";
   const category = params.category ?? "all";
   const sort = params.sort === "newest" ? "newest" : "community";
+  const viewer = await getChatGPTUser();
+  const settings = viewer ? await getProfileSettings(viewer.email) : null;
   const [videos, creators] = await Promise.all([
-    listVideos({ query, category, sort }),
+    listVideos({ query, category, sort, preferSeries: settings?.preferLongform }),
     query ? listProfiles({ query, limit: 6 }) : Promise.resolve([]),
   ]);
 
@@ -43,8 +46,9 @@ export default async function Home({
             <em>Nothing else.</em>
           </h1>
           <p className="hero-copy">
-            Pumblo is an AI-only video-sharing network. Watch, upload, search,
-            follow creators, and join the conversation around every render.
+            Pumblo is an AI-only video-sharing network and the creator-owned home
+            after the render: connected stories, transparent limits, and public
+            work that is not trapped inside one generation tool.
           </p>
           <div className="hero-actions">
             <a className="button button-primary button-large" href="#feed">
@@ -64,8 +68,8 @@ export default async function Home({
         <aside className="hero-manifesto">
           <span className="manifesto-index">THE FEED HAS ONE RULE</span>
           <p>
-            AI must materially shape every video. The work leads; the process
-            card is there when you want the story behind it.
+            AI must materially shape every video. Creators keep the public link,
+            credit their sources, and build an audience across tools—not for one vendor.
           </p>
           <div className="manifesto-rule" />
           <div className="manifesto-stats">
@@ -137,7 +141,7 @@ export default async function Home({
                   />
                   <span>
                     <strong>{creator.displayName}</strong>
-                    <small>@{creator.handle} · {creator.followerCount} followers</small>
+                    <small>@{creator.handle}</small>
                   </span>
                 </Link>
               ))}
@@ -193,14 +197,18 @@ export default async function Home({
           </article>
           <article>
             <span>03</span>
-            <h3>Go behind the render</h3>
+            <h3>Follow stories, not fragments</h3>
             <p>
-              Every video can carry an optional process card with tools,
-              workflow, license, and creator notes. It supports the video; it
-              does not replace it.
+              Numbered series, next-episode playback, Continue Watching, and a
+              transparent Story Tier reward creators who sustain a plotline.
             </p>
           </article>
         </div>
+        <p className="supporting-feature-note">
+          <strong>Go behind the render</strong> when context matters: a video can
+          carry optional tools, workflow, license, source credit, and creator
+          notes. It supports the video; it does not replace it.
+        </p>
       </section>
 
       <section className="how-section" id="how-it-works">

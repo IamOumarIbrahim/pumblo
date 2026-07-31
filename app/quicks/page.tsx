@@ -3,7 +3,7 @@ import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
 import { QuickFeed } from "@/app/components/QuickFeed";
 import { toPublicVideo } from "@/app/lib/public-video";
 import { QUICK_DURATION_CEILING_SECONDS } from "@/app/lib/quicks";
-import { getProfileByEmail, listLikedVideoIds, listVideos } from "@/db";
+import { getProfileByEmail, getProfileSettings, listLikedVideoIds, listVideos } from "@/db";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 export default async function QuicksPage() {
   const viewer = await getChatGPTUser();
   const profile = viewer ? await getProfileByEmail(viewer.email) : null;
+  const settings = viewer ? await getProfileSettings(viewer.email) : null;
   const videos = await listVideos({
     maxDurationSeconds: QUICK_DURATION_CEILING_SECONDS,
     sort: "newest",
@@ -34,6 +35,8 @@ export default async function QuicksPage() {
         signedIn={Boolean(viewer)}
         hasProfile={Boolean(profile)}
         signInPath={chatGPTSignInPath("/quicks")}
+        dataSaver={settings?.dataSaver ?? false}
+        reducedMotion={settings?.reducedMotion ?? false}
       />
     </main>
   );

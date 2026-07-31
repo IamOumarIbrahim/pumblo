@@ -6,47 +6,43 @@ Checked July 31, 2026 against official provider documentation.
 
 Keep the existing Sites deployment with managed D1 (`DB`) and R2 (`MEDIA`) bindings.
 
-This is the only path already connected to the repository that:
+It is the only already-connected path that keeps the public `chatgpt.site` domain live and crawlable, needs no new third-party account/secret/card from the repository owner, and supports authentication, SQL state, durable objects, and byte-range video playback in one deployment.
 
-- keeps the public `chatgpt.site` domain live and indexable;
-- requires no new third-party account, API secret, OAuth application, or card from the repository user;
-- supports server-rendered pages, authentication, SQL data, durable objects, and byte-range video playback;
-- preserves one-command verification and one managed deployment.
-
-This is not a “free forever” guarantee. Sites-managed quotas and future pricing are platform-controlled, and direct Cloudflare product allowances do not prove the allowance of the managed Sites bindings.
+This is not a “free forever” guarantee. Sites-managed quotas, availability, and future pricing are platform-controlled. Direct Cloudflare product allowances are comparison evidence, not proof of identical Sites terms.
 
 ## Application capacity envelope
 
 Pumblo enforces:
 
 ```text
-100 creators × (2 active videos × 40 MiB + 2 profile images × 3 MiB)
+100 creators × (80 MiB total video + 2 profile images × 3 MiB)
 = 8,600 MiB
 ```
 
-That is 9,017,753,600 bytes (about 8.40 GiB): 8,000 MiB for videos and 600 MiB for cropped avatar/banner objects. Owners can delete a video to recover both its object storage and active slot, and can replace or remove profile media. Profiles themselves have no application-level count cap.
+That is 9,017,753,600 bytes (about 8.40 GiB): 8,000 MiB for videos and 600 MiB for cropped profile media. Each creator gets 12 active video slots, each file remains capped at 40 MiB, and the 80 MiB per-channel total is the controlling bound. Deletion recovers both object storage and a slot; profile images can be replaced or removed. Profiles have no application-level count cap.
 
-The 8,600 MiB envelope sits below Cloudflare R2's published direct-account free allowance of 10 GB-month for Standard storage. This is a conservative comparison benchmark, not a promise that Sites inherits the same quota.
+The 8,600 MiB envelope is below Cloudflare R2's published direct-account Standard-storage free allowance of 10 GB-month. This is a conservative benchmark, not a Sites quota promise.
 
-## Official-plan comparison
+## Official free-plan evidence
 
-| Provider | Official published position | Fit for this launch |
+| Resource | Official published allowance | Pumblo interpretation |
 | :--- | :--- | :--- |
-| [Cloudflare R2](https://developers.cloudflare.com/r2/pricing/) | 10 GB-month Standard storage, 1 million Class A operations, 10 million Class B operations, and free Internet egress are listed as monthly free usage. [Direct setup](https://developers.cloudflare.com/r2/get-started/) uses an R2 subscription/checkout flow. | Good technical fit; current Sites binding avoids new direct-account setup. |
-| [Cloudflare D1](https://developers.cloudflare.com/d1/platform/pricing/) | Free includes 5 million rows read/day, 100,000 rows written/day, and 5 GB total storage. | Strong fit for 100-user metadata and social actions. |
-| [Cloudflare Stream](https://developers.cloudflare.com/stream/pricing/) | Stored and delivered minutes are usage-priced. | Rejected: not an absolutely free launch path. |
-| [Supabase Free](https://supabase.com/docs/guides/platform/billing-on-supabase) | Free includes 1 GB storage, 5 GB egress, and a 500 MB database. | Media storage is below the 8,600 MiB envelope. |
-| [Vercel Blob Hobby](https://vercel.com/docs/vercel-blob/usage-and-pricing) | Hobby includes 1 GB storage and 10 GB data transfer. | Media storage is below the envelope. |
-| [Firebase Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Current default-bucket access requires the Blaze pay-as-you-go plan and a linked billing account. | Rejected: conflicts with no-card setup. |
-| [Cloudinary Free](https://cloudinary.com/pricing) | Free is advertised with no credit card and 25 monthly credits. [Credits](https://cloudinary.com/documentation/billing_and_plans) are shared by storage, bandwidth, and transformations. | Possible fallback, but adds an account/secret and a variable shared media budget. |
+| [Cloudflare R2](https://developers.cloudflare.com/r2/pricing/) | 10 GB-month Standard storage, 1 million Class A operations/month, 10 million Class B operations/month, free Internet egress | The modeled 9.02 decimal-GB media ceiling fits storage; operations and managed Sites terms still need monitoring |
+| [Cloudflare D1](https://developers.cloudflare.com/d1/platform/pricing/) | 5 GB total, 5 million rows read/day, 100,000 rows written/day on Free | Ample metadata envelope for the first 100 creators; daily write exhaustion remains possible under abuse |
+| [Cloudflare Workers](https://developers.cloudflare.com/workers/platform/limits/) | 100,000 requests/day, 10 ms CPU/invocation, 128 MB memory, 100 MB request bodies on Free | 40 MiB final uploads fit the body/memory boundary; this is not a concurrency or CPU load-test result |
+| [Cloudflare Stream](https://developers.cloudflare.com/stream/pricing/) | Usage-priced stored and delivered minutes | Rejected for a zero-cost launch path |
+| [Supabase Free](https://supabase.com/docs/guides/platform/billing-on-supabase) | 1 GB storage and 5 GB egress | Too small for the modeled media envelope |
+| [Vercel Blob Hobby](https://vercel.com/docs/vercel-blob/usage-and-pricing) | 1 GB storage and 10 GB transfer | Too small for the modeled media envelope |
+| [Firebase Storage](https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024) | Current default-bucket access requires Blaze billing | Conflicts with no-card setup |
+| [Cloudinary Free](https://cloudinary.com/pricing) | Advertised without a card and with shared monthly credits | Viable fallback, but adds an account/secret and a variable storage/bandwidth/transform budget |
 
 ## What “100 users” means
 
-It means the application storage guards can contain 100 fully utilized creator accounts under the stated envelope. It does not mean:
+It means application storage guards contain 100 fully utilized creator accounts under the stated envelope. It does not mean:
 
-- 100 simultaneous uploads have been load-tested;
+- 100 simultaneous uploads or viewers have been load-tested;
 - only the first 100 profiles may register;
-- every creator can receive unlimited playback bandwidth;
-- or the host guarantees uptime, quota continuity, or permanent zero pricing.
+- every creator receives unlimited playback;
+- the host guarantees indexing, uptime, quota continuity, or permanent zero pricing.
 
-The repository states these boundaries because a credible capacity target is more useful than an unsupported scale claim.
+Watch R2 storage, Class B reads, Worker requests/CPU, and D1 daily reads/writes during the beta. The most likely first constraint is playback/request volume, not D1 storage.

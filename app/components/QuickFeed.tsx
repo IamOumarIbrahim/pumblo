@@ -13,6 +13,8 @@ export function QuickFeed({
   signedIn,
   hasProfile,
   signInPath,
+  dataSaver,
+  reducedMotion,
 }: {
   initialVideos: PublicVideo[];
   initialLikedVideoIds: string[];
@@ -20,6 +22,8 @@ export function QuickFeed({
   signedIn: boolean;
   hasProfile: boolean;
   signInPath: string;
+  dataSaver: boolean;
+  reducedMotion: boolean;
 }) {
   const feedRef = useRef<HTMLDivElement>(null);
   const viewedRef = useRef(new Set<string>());
@@ -44,8 +48,8 @@ export function QuickFeed({
     const bounded = Math.max(0, Math.min(index, videos.length - 1));
     feedRef.current
       ?.querySelector<HTMLElement>(`[data-quick-index="${bounded}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [videos.length]);
+      ?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  }, [reducedMotion, videos.length]);
 
   const loadMore = useCallback(async () => {
     if (!hasMore || loading) return;
@@ -97,7 +101,7 @@ export function QuickFeed({
   useEffect(() => {
     feedRef.current?.querySelectorAll<HTMLVideoElement>("video").forEach((video, index) => {
       video.muted = muted;
-      if (index === activeIndex) void video.play().catch(() => undefined);
+      if (index === activeIndex && !dataSaver) void video.play().catch(() => undefined);
       else video.pause();
     });
     const current = videos[activeIndex];
@@ -105,7 +109,7 @@ export function QuickFeed({
       viewedRef.current.add(current.id);
       void fetch(`/api/videos/${current.id}/view`, { method: "POST" });
     }
-  }, [activeIndex, muted, videos]);
+  }, [activeIndex, dataSaver, muted, videos]);
 
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -177,7 +181,7 @@ export function QuickFeed({
                 loop
                 muted={muted}
                 playsInline
-                preload={Math.abs(index - activeIndex) <= 1 ? "auto" : "metadata"}
+                preload={dataSaver ? "metadata" : Math.abs(index - activeIndex) <= 1 ? "auto" : "metadata"}
                 onClick={(event) => {
                   if (event.currentTarget.paused) void event.currentTarget.play();
                   else event.currentTarget.pause();
@@ -198,6 +202,11 @@ export function QuickFeed({
                   <strong>@{video.ownerHandle}</strong>
                 </Link>
                 <h2>{video.title}</h2>
+                {video.seriesId ? (
+                  <Link className="quick-series" href={`/series/${video.seriesId}`}>
+                    {video.seriesTitle} · S{video.seasonNumber} E{video.episodeNumber}
+                  </Link>
+                ) : null}
                 <p>{video.description || `Created with ${video.generationTool}.`}</p>
                 <span>{Math.ceil(video.durationSeconds)}s · {video.generationTool}</span>
               </div>

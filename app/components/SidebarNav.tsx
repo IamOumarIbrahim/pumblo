@@ -16,6 +16,7 @@ export function SidebarNav({
   signedIn,
   signInPath,
   profile,
+  unreadNotifications,
 }: {
   signedIn: boolean;
   signInPath: string;
@@ -25,6 +26,7 @@ export function SidebarNav({
     avatarColor: string;
     avatarUrl: string;
   } | null;
+  unreadNotifications: number;
 }) {
   const pathname = usePathname();
   const accountItems: NavItem[] = [
@@ -33,9 +35,20 @@ export function SidebarNav({
       label: profile ? "Your channel" : "Create channel",
       glyph: "◉",
     },
+    { href: "/library", label: "Library", glyph: "▤" },
+    {
+      href: "/notifications",
+      label: unreadNotifications ? `Notifications (${unreadNotifications})` : "Notifications",
+      glyph: "●",
+    },
+    { href: "/studio", label: "Creator studio", glyph: "▦", exact: true },
+    { href: "/studio/series", label: "Series", glyph: "≡" },
     { href: "/upload", label: "Upload video", glyph: "＋" },
     ...(profile
       ? [{ href: "/settings/profile", label: "Edit profile", glyph: "✎" }]
+      : []),
+    ...(profile
+      ? [{ href: "/settings", label: "Settings", glyph: "⚙" }]
       : []),
     { href: "/about", label: "About Pumblo", glyph: "i" },
   ];

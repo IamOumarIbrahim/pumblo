@@ -1,30 +1,56 @@
 # HTTP Route Reference
 
-Pumblo's browser client uses same-origin routes. The open beta does not expose API keys or a public SDK.
+Pumblo's browser client uses same-origin routes. The open beta does not expose API keys or promise a stable public SDK.
 
 | Route | Method | Auth | Purpose |
 | :--- | :--- | :--- | :--- |
-| `/api/profile` | GET | Required | Return the signed-in person's Pumblo profile |
-| `/api/profile` | POST JSON | Required | Create or update a profile |
-| `/api/profile/media/:kind` | POST image body | Required profile | Create or replace a cropped `avatar` or `banner` |
-| `/api/profile/media/:kind` | DELETE | Required profile | Remove an `avatar` or `banner` reference and object |
-| `/api/profiles?q=` | GET | Public | Query public creator profiles |
-| `/api/profiles/:handle/follow` | POST | Required profile | Toggle a follow relationship |
-| `/api/videos?q=&category=&sort=` | GET | Public | Query videos with `sort=community|newest` |
-| `/api/videos` | POST video body | Required profile | Stream one MP4/WebM into R2 |
-| `/api/videos/:id` | DELETE | Owner only | Delete media, metadata, likes, and comments |
-| `/api/videos/:id/like` | POST | Required profile | Toggle the caller's like |
-| `/api/videos/:id/comments` | POST JSON | Required profile | Save a 1–500 character comment |
-| `/api/videos/:id/view` | POST | Public | Count a Quick becoming active in the viewer |
-| `/api/quicks?offset=` | GET | Public | Page videos with verified duration greater than 0 and strictly below 60 seconds |
-| `/media/:id` | GET | Public | Return source video, including byte ranges |
-| `/profile-media/:handle/:kind` | GET | Public | Return the current cropped profile image |
+| `/api/profile` | GET | Required | Return the caller's profile |
+| `/api/profile` | POST JSON | Required | Create/update profile text, privacy-controlled links, and color |
+| `/api/profile/media/:kind` | POST image body | Required profile | Create/replace a cropped `avatar` or `banner` |
+| `/api/profile/media/:kind` | DELETE | Required profile | Remove profile media |
+| `/api/profiles?q=` | GET | Public | Query privacy-filtered creator profiles |
+| `/api/profiles/:handle/follow` | POST | Required profile | Toggle follow |
+| `/api/settings` | GET, POST JSON | Required profile | Read/update playback, content, notification, and privacy settings |
+| `/api/series?handle=` | GET | Public | List a creator's series without exposing owner email |
+| `/api/series?mine=1` | GET | Required | List caller-owned series |
+| `/api/series` | POST JSON | Required profile | Create a series |
+| `/api/series/:id` | PATCH, DELETE | Owner only | Update series or detach its videos and delete it |
+| `/api/videos?q=&category=&sort=` | GET | Public | Query videos with `community` or `newest` sorting |
+| `/api/videos` | POST video body | Required profile | Validate and publish one MP4/WebM |
+| `/api/videos/:id` | DELETE | Owner only | Delete media and dependent activity |
+| `/api/videos/:id/like` | POST | Required profile | Toggle like |
+| `/api/videos/:id/comments` | POST JSON | Required profile | Save a 1–500-character comment |
+| `/api/videos/:id/view` | POST | Public | Count a Quick becoming active |
+| `/api/videos/:id/save` | POST | Required profile | Toggle Watch Later |
+| `/api/videos/:id/progress` | POST JSON | Required profile | Save bounded playback progress/completion |
+| `/api/videos/:id/report` | POST JSON | Required profile | Create/update one report by this profile/video |
+| `/api/quicks?offset=` | GET | Public | Page videos with runtime below 60 seconds |
+| `/api/notifications/read` | POST | Required profile | Mark caller notifications read |
+| `/api/account/export` | GET | Required profile | Download caller-owned JSON data |
+| `/media/:id` | GET | Public | Serve source video, including byte ranges |
+| `/profile-media/:handle/:kind` | GET | Public | Serve current cropped profile media |
 | `/api/dev-session?email=…` | GET | Development only | Switch local test identity |
 
-Production identity is supplied by the Sites dispatcher. Do not send or trust `oai-authenticated-user-*` headers from an origin that bypasses the dispatcher.
+## Raw video upload contract
 
-The upload body is the raw video. URL-encoded JSON in `X-Pumblo-Metadata` carries title, description, free-text generation tool, workflow mode, license, optional process notes, disclosure acknowledgement, declared byte length, and browser-read duration. The route caps that header at 12 KB, limits objects to 40 MiB, verifies duration is positive and no more than six hours, and verifies the stored object size before inserting metadata. Duration controls Quicks eligibility; exactly 60 seconds is not a Quick.
+The request body is the final MP4/WebM. URL-encoded JSON in `X-Pumblo-Metadata` carries title, description, generation tool/mode, category, license, optional prompt/process notes, optional series/episode/source credit, disclosure acknowledgement, byte length, browser-read duration, and local-optimizer source size.
 
-Profile-media bodies are the exact crop generated in the browser. The route accepts JPEG, PNG, or WebP up to 3 MiB, checks the declared/stored sizes and file signature, then switches the D1 reference. Replacing or removing media makes the profile change authoritative even if cleanup of a stale R2 object must be retried later.
+The route:
 
-`sort=community` powers the UI label **Trending** and uses likes, comments, capped views, and newest-time tie-breaking. The exact formula is documented and unit-tested.
+1. caps the metadata header at 12 KB;
+2. requires an existing profile and an available slot;
+3. enforces 40 MiB per object, 80 MiB total video storage, and 12 active videos;
+4. streams the request body to R2 and checks the stored size;
+5. reads the capped object to verify a supported video track and container runtime;
+6. requires browser/server runtime agreement within `max(2 seconds, 3%)`;
+7. computes SHA-256 and rejects duplicate bytes on the same channel;
+8. validates series ownership/status and relies on a unique series/season/episode index;
+9. publishes the D1 row or deletes the R2 object on failure.
+
+Only the final stored size counts toward quota. `originalSizeBytes` and the displayed local savings are uploader-side estimates; they do not affect Story Tier, ranking, or quota.
+
+## Public object boundary
+
+Public video objects omit owner email, R2 object key, and content hash. Public profile objects omit email and apply the owner's visibility settings to location, creator links, and follower counts. Public series objects omit owner email.
+
+Production identity is supplied by the Sites dispatcher. Do not trust `oai-authenticated-user-*` headers from an origin that bypasses it.
