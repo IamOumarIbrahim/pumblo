@@ -43,3 +43,5 @@ Pumblo implements generated page metadata, canonical links, explicit Vinext rout
 ## Dependency security
 
 The release locks Next.js and `eslint-config-next` to 16.2.12. The earlier 16.2.6 tree was rejected after `npm audit --omit=dev` reported published high-severity advisories affecting Next.js and transitive PostCSS/Sharp versions. The release gate reruns the production-only audit after the patch upgrade and records the result in [`VERIFICATION.md`](../VERIFICATION.md).
+
+`npm audit` without `--omit=dev` currently reports nine high-severity paths through ESLint 9 plugins, Minimatch, and Brace Expansion ([GHSA-mh99-v99m-4gvg](https://github.com/advisories/GHSA-mh99-v99m-4gvg)). Those packages are development-only and are not included in the deployed worker. Forcing ESLint 10 would violate the current Next ESLint plugin peer ranges, so the repository keeps the compatible lint stack, enforces a clean production audit, and documents the remaining development advisory instead of claiming the entire install is clean.
