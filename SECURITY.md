@@ -1,10 +1,5 @@
 # Security Policy
 
-## Reporting a Vulnerability
+Do not file exploitable security details in a public issue.
 
-Security reports are taken seriously and should **never** be filed as public GitHub issues.
-
-Please email `security@pumblo.ai` or use GitHub's private vulnerability reporting feature for this repository.
-
-### Response Time
-We aim to acknowledge reports within 24 hours and issue fixes or mitigation steps within 7 days.
+Use GitHub's **Report a vulnerability** feature for this repository. Include the affected route, impact, reproduction steps, and any suggested mitigation. Authentication bypasses, cross-profile writes, unsafe media delivery, and exposure of private profile email addresses are treated as high priority.

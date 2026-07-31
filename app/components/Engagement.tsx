@@ -1,0 +1,176 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import type { Comment } from "@/db";
+import { relativeTime } from "@/app/lib/format";
+import { Avatar } from "./Avatar";
+
+export function Engagement({
+  videoId,
+  initialLikeCount,
+  initialLiked,
+  initialComments,
+  signedIn,
+  hasProfile,
+  signInPath,
+}: {
+  videoId: string;
+  initialLikeCount: number;
+  initialLiked: boolean;
+  initialComments: Comment[];
+  signedIn: boolean;
+  hasProfile: boolean;
+  signInPath: string;
+}) {
+  const [liked, setLiked] = useState(initialLiked);
+  const [likeCount, setLikeCount] = useState(initialLikeCount);
+  const [comments, setComments] = useState(initialComments);
+  const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const actionPath = !signedIn
+    ? signInPath
+    : !hasProfile
+      ? `/settings/profile?next=${encodeURIComponent(`/watch/${videoId}`)}`
+      : null;
+
+  async function toggleLike() {
+    if (actionPath) {
+      window.location.href = actionPath;
+      return;
+    }
+    setBusy(true);
+    setError("");
+    const response = await fetch(`/api/videos/${videoId}/like`, {
+      method: "POST",
+    });
+    const payload = (await response.json()) as {
+      liked?: boolean;
+      count?: number;
+      error?: string;
+    };
+    if (!response.ok || typeof payload.liked !== "boolean") {
+      setError(payload.error ?? "Like could not be saved.");
+    } else {
+      setLiked(payload.liked);
+      setLikeCount(payload.count ?? likeCount);
+    }
+    setBusy(false);
+  }
+
+  async function addComment(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (actionPath) {
+      window.location.href = actionPath;
+      return;
+    }
+    if (!content.trim()) return;
+
+    setBusy(true);
+    setError("");
+    const response = await fetch(`/api/videos/${videoId}/comments`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+    const payload = (await response.json()) as {
+      comment?: Comment;
+      error?: string;
+    };
+    if (!response.ok || !payload.comment) {
+      setError(payload.error ?? "Comment could not be posted.");
+    } else {
+      setComments((current) => [payload.comment!, ...current]);
+      setContent("");
+    }
+    setBusy(false);
+  }
+
+  return (
+    <section className="engagement">
+      <div className="engagement-actions">
+        <button
+          className={liked ? "like-button liked" : "like-button"}
+          type="button"
+          disabled={busy}
+          aria-pressed={liked}
+          onClick={toggleLike}
+        >
+          <span aria-hidden="true">{liked ? "♥" : "♡"}</span>
+          {liked ? "Liked" : "Like"} · {likeCount}
+        </button>
+        <a className="share-button" href="#comments">
+          Comment · {comments.length}
+        </a>
+      </div>
+
+      <div className="comments" id="comments">
+        <div className="comments-heading">
+          <h2>Conversation</h2>
+          <span>{comments.length} comments</span>
+        </div>
+
+        <form className="comment-form" onSubmit={addComment}>
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder={
+              signedIn
+                ? "Add something thoughtful…"
+                : "Sign in to join the conversation"
+            }
+            aria-label="Write a comment"
+          />
+          <div>
+            <small>{content.length}/500</small>
+            <button className="button button-primary" disabled={busy}>
+              {actionPath
+                ? !signedIn
+                  ? "Sign in to comment"
+                  : "Create profile to comment"
+                : busy
+                  ? "Posting…"
+                  : "Post comment"}
+            </button>
+          </div>
+        </form>
+
+        {error ? <p className="form-error">{error}</p> : null}
+
+        <div className="comment-list">
+          {comments.length ? (
+            comments.map((comment) => (
+              <article className="comment" key={comment.id}>
+                <Link href={`/profile/${comment.authorHandle}`}>
+                  <Avatar
+                    name={comment.authorDisplayName}
+                    color={comment.authorAvatarColor}
+                    size="md"
+                  />
+                </Link>
+                <div>
+                  <p className="comment-byline">
+                    <Link href={`/profile/${comment.authorHandle}`}>
+                      {comment.authorDisplayName}
+                    </Link>
+                    <span>@{comment.authorHandle}</span>
+                    <span>{relativeTime(comment.createdAt)}</span>
+                  </p>
+                  <p>{comment.content}</p>
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="no-comments">
+              No comments yet. Start with what stayed with you.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,14 +1,18 @@
-# REST API Reference (/api/v1)
+# HTTP Route Reference
 
-| Endpoint | Method | Auth Required | Purpose |
-|---|---|---|---|
-| `/api/v1/auth/signup` | POST | No | Register new account with email + password |
-| `/api/v1/auth/login` | POST | No | Authenticate and set HttpOnly session cookie |
-| `/api/v1/auth/verify` | POST | Yes | Complete Proof-of-Humanity bot check |
-| `/api/v1/videos` | POST | Yes (Human Trust Token) | Upload AI-generated video |
-| `/api/v1/videos/:id` | GET | No | Fetch video metadata, provenance, and SQS scores |
-| `/api/v1/videos/:id/comments` | POST | Yes (Human Trust Token) | Post comment |
-| `/api/v1/channels/:handle` | GET | No | Fetch channel profile and Consistency score |
-| `/api/v1/search` | GET | No | Faceted video search |
+Pumblo's browser client uses same-origin HTTP routes. This beta does not expose API keys or a public SDK.
 
-Webhooks: `video.published`, `video.flagged`, `video.removed`.
+| Route | Method | Auth | Purpose |
+| :--- | :--- | :--- | :--- |
+| `/api/profile` | GET | Required | Return the signed-in person's Pumblo profile |
+| `/api/profile` | POST JSON | Required | Create or update a profile |
+| `/api/videos` | GET | Public | Query films with `q`, `category`, and `sort` |
+| `/api/videos` | POST video body | Required profile | Stream one MP4/WebM into R2 with `X-Pumblo-Metadata` |
+| `/api/videos/:id/like` | POST | Required profile | Toggle the caller's like |
+| `/api/videos/:id/comments` | POST JSON | Required profile | Save a 1-500 character comment |
+| `/media/:id` | GET | Public | Return the source video, including byte ranges |
+| `/api/dev-session?email=…` | GET | Development only | Switch local test identity |
+
+Production identity is supplied by the Sites dispatcher. Do not send or trust `oai-authenticated-user-*` headers from an origin that bypasses that dispatcher.
+
+The upload body is the raw video file. The client sends URL-encoded JSON in `X-Pumblo-Metadata` containing title, description, generation fields, license, optional process notes, disclosure acknowledgement, and declared byte length. The route caps this header at 12 KB and verifies the stored R2 object size before inserting metadata.

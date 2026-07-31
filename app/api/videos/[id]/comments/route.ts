@@ -1,0 +1,47 @@
+import { getChatGPTUser } from "@/app/chatgpt-auth";
+import {
+  addComment,
+  getProfileByEmail,
+  getVideo,
+  listComments,
+} from "@/db";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  if (!(await getVideo(id))) {
+    return Response.json({ error: "Film not found." }, { status: 404 });
+  }
+  return Response.json({ comments: await listComments(id) });
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "Sign in required." }, { status: 401 });
+  if (!(await getProfileByEmail(user.email))) {
+    return Response.json(
+      { error: "Create your profile before commenting." },
+      { status: 403 },
+    );
+  }
+
+  const { id } = await params;
+  if (!(await getVideo(id))) {
+    return Response.json({ error: "Film not found." }, { status: 404 });
+  }
+
+  const body = (await request.json()) as { content?: unknown };
+  const content =
+    typeof body.content === "string" ? body.content.trim().slice(0, 500) : "";
+  if (!content) {
+    return Response.json({ error: "Write a comment first." }, { status: 400 });
+  }
+
+  const comment = await addComment(id, user.email, content);
+  return Response.json({ comment }, { status: 201 });
+}

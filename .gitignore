@@ -2,12 +2,19 @@
 node_modules/
 dist/
 .next/
+.wrangler/
 *.log
+site-*.tar.gz
 
-# Env
+# Environment
 .env
 .env.local
+.env.*.local
 
-# OS
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Operating systems
 .DS_Store
 Thumbs.db
