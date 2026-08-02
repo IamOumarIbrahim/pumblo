@@ -18,9 +18,7 @@
 </p>
 
 > [!IMPORTANT]
-> **No card setup path.** Local development needs no API keys. The checked-in Sites project supplies production authentication, D1, and R2. “Free” is a current deployment condition—not a promise that any provider's quotas or pricing will remain unchanged.
-
-Pumblo is an AI-only video-sharing network. Guests can watch and search freely; creators can publish standalone videos, Quicks, or connected episodes, then build a durable audience through follows, activity notifications, comments, Watch Later, and Continue Watching. It is tool-neutral: a public home for work made with ChatGPT, Sora, Veo, Runway, Kling, ComfyUI, or any other AI workflow.
+> **No card setup path.** Local development needs no API keys. The checked-in Sites project supplies production authentication, D1, and R2. "Free" is a current deployment condition—not a promise that any provider's quotas or pricing will remain unchanged.
 
 ```powershell
 # Quickstart — Windows PowerShell
@@ -29,6 +27,14 @@ cd pumblo
 .\scripts\setup.ps1
 npm run dev
 ```
+
+**The problem:** AI video generators are good at producing files, but a render trapped inside one generator's private gallery never becomes a channel, a story, or an audience—it gets watched once, by the person who made it, and then it's gone.
+
+**Why Pumblo exists:** AI-made video needed a home after generation stops—one place to publish and follow work regardless of which tool made it, instead of a different disconnected gallery per generator.
+
+Pumblo turns scattered renders into channels, series, and audiences by giving every video a public, searchable page with transparent limits and a permanent link. It's built for creators publishing AI video who want people to come back—not for general (non-AI) video hosting, and not as a replacement for any generation tool itself.
+
+<br />
 
 ## 📖 Table of Contents
 
@@ -51,7 +57,11 @@ npm run dev
 
 ## 💡 What is Pumblo?
 
-Generation tools are good at producing files, but a render trapped in a tool-specific gallery does not become a channel, a story, or an audience. Pumblo starts after generation: it gives AI video an independent, searchable public home with transparent limits and portable links.
+Most AI-video workflows end at the export button: the file lands in a generator's own history, gets downloaded once, and rarely finds a second viewer. Pumblo exists for what happens after that export—turning a folder of standalone clips into a channel other people can actually find, follow, and return to.
+
+| Before | After |
+| :--- | :--- |
+| A finished render sits in a generator's private gallery, visible only to the person who made it, with no link to anything else they've made | The same render gets a public, searchable page with a canonical URL, and can join a numbered series that viewers follow episode to episode |
 
 Instead of optimizing only for disconnected clips, Pumblo supports three viewing loops:
 
@@ -59,7 +69,7 @@ Instead of optimizing only for disconnected clips, Pumblo supports three viewing
 - **Follow a story**: numbered series pages, resume progress, and next-episode playback.
 - **Support a creator**: profiles, follows, likes, comments, notifications, and shareable canonical URLs.
 
-“Behind the render” remains optional context. Tool, workflow, prompt, license, and source-credit fields support the video; they are not the main product.
+"Behind the render" remains optional context. Tool, workflow, prompt, license, and source-credit fields support the video; they are not the main product.
 
 ---
 
@@ -185,7 +195,7 @@ The helper route returns `404` outside development.
 
 ---
 
-## 📊 Capacity & Hosting
+## 📦 Capacity & Hosting
 
 The launch envelope is explicit and test-enforced:
 
@@ -198,7 +208,7 @@ Each creator has 12 active video slots, but the 80 MiB channel total—not `12 �
 
 For comparison, Cloudflare currently publishes 10 GB-month of Standard R2 storage, 1 million Class A operations, 10 million Class B operations, and free Internet egress in its monthly free tier. D1 Free currently publishes 5 GB storage, 5 million rows read/day, and 100,000 rows written/day; Workers Free publishes 100,000 requests/day. Those direct-product limits are useful capacity benchmarks, but they do not prove that Sites-managed bindings inherit identical terms. See [`docs/HOSTING-100-USERS.md`](docs/HOSTING-100-USERS.md) for dated official sources and caveats.
 
-There is no application-level signup cap. “100 creators” is a bounded storage design target—not a claim of 100 simultaneous uploads, guaranteed uptime, permanent zero pricing, or unlimited playback.
+There is no application-level signup cap. "100 creators" is a bounded storage design target—not a claim of 100 simultaneous uploads, guaranteed uptime, permanent zero pricing, or unlimited playback.
 
 ---
 
@@ -224,7 +234,7 @@ Public routes: [`docs/api.md`](docs/api.md).
 
 ## 🚪 Product Gates
 
-Every market-facing change must survive one blunt question: **“Bro, who's even gonna use this?”**
+Every market-facing change must survive one blunt question: **"Bro, who's even gonna use this?"**
 
 | Gate | Shipping test |
 | :--- | :--- |
