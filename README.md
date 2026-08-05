@@ -1,7 +1,7 @@
 <div align="center">
-  <h1>🎬 Pumblo</h1>
+  <h1> Pumblo</h1>
   <p><strong>The creator-owned home for AI video after the render.</strong></p>
-  <p>Watch, publish, organize, and discuss AI-made video across tools—not inside one generator's gallery.</p>
+  <p>Watch, publish, organize, and discuss AI-made video across toolsnot inside one generator's gallery.</p>
 
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg?style=flat-square)](LICENSE)
@@ -14,23 +14,29 @@
 </div>
 
 <p align="center">
-  <img src="public/og.png" alt="Pumblo — AI video. Nothing else." width="100%" />
+  <img src="public/og.png" alt="Pumblo  AI video. Nothing else." width="100%" />
 </p>
 
 > [!IMPORTANT]
-> **No card setup path.** Local development needs no API keys. The checked-in Sites project supplies production authentication, D1, and R2. “Free” is a current deployment condition—not a promise that any provider's quotas or pricing will remain unchanged.
-
-Pumblo is an AI-only video-sharing network. Guests can watch and search freely; creators can publish standalone videos, Quicks, or connected episodes, then build a durable audience through follows, activity notifications, comments, Watch Later, and Continue Watching. It is tool-neutral: a public home for work made with ChatGPT, Sora, Veo, Runway, Kling, ComfyUI, or any other AI workflow.
+> **No card setup path.** Local development needs no API keys. The checked-in Sites project supplies production authentication, D1, and R2. "Free" is a current deployment conditionnot a promise that any provider's quotas or pricing will remain unchanged.
 
 ```powershell
-# Quickstart — Windows PowerShell
+# Quickstart  Windows PowerShell
 git clone https://github.com/IamOumarIbrahim/pumblo.git
 cd pumblo
 .\scripts\setup.ps1
 npm run dev
 ```
 
-## 📖 Table of Contents
+**The problem:** AI video generators are good at producing files, but a render trapped inside one generator's private gallery never becomes a channel, a story, or an audienceit gets watched once, by the person who made it, and then it's gone.
+
+**Why Pumblo exists:** AI-made video needed a home after generation stopsone place to publish and follow work regardless of which tool made it, instead of a different disconnected gallery per generator.
+
+Pumblo turns scattered renders into channels, series, and audiences by giving every video a public, searchable page with transparent limits and a permanent link. It's built for creators publishing AI video who want people to come backnot for general (non-AI) video hosting, and not as a replacement for any generation tool itself.
+
+<br />
+
+## Table of Contents
 
 - [What is Pumblo?](#-what-is-pumblo)
 - [Key Features](#-key-features)
@@ -49,9 +55,13 @@ npm run dev
 
 ---
 
-## 💡 What is Pumblo?
+## What is Pumblo?
 
-Generation tools are good at producing files, but a render trapped in a tool-specific gallery does not become a channel, a story, or an audience. Pumblo starts after generation: it gives AI video an independent, searchable public home with transparent limits and portable links.
+Most AI-video workflows end at the export button: the file lands in a generator's own history, gets downloaded once, and rarely finds a second viewer. Pumblo exists for what happens after that exportturning a folder of standalone clips into a channel other people can actually find, follow, and return to.
+
+| Before | After |
+| :--- | :--- |
+| A finished render sits in a generator's private gallery, visible only to the person who made it, with no link to anything else they've made | The same render gets a public, searchable page with a canonical URL, and can join a numbered series that viewers follow episode to episode |
 
 Instead of optimizing only for disconnected clips, Pumblo supports three viewing loops:
 
@@ -59,32 +69,32 @@ Instead of optimizing only for disconnected clips, Pumblo supports three viewing
 - **Follow a story**: numbered series pages, resume progress, and next-episode playback.
 - **Support a creator**: profiles, follows, likes, comments, notifications, and shareable canonical URLs.
 
-“Behind the render” remains optional context. Tool, workflow, prompt, license, and source-credit fields support the video; they are not the main product.
+"Behind the render" remains optional context. Tool, workflow, prompt, license, and source-credit fields support the video; they are not the main product.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 - ▶️ **Hover previews**: desktop video cards preview inline on pointer hover. Pumblo requests sound and falls back to muted playback with a one-click sound control when browser autoplay policy blocks it.
-- ⚡ **Quicks**: videos strictly shorter than 60 seconds enter a vertical, paginated feed with keyboard and on-screen navigation.
-- 🎞️ **Series and episodes**: creators organize videos by season and episode; viewers get ordered series pages and optional next-episode autoplay.
-- 🏅 **Story Tier**: a transparent structural grade rewards sustained, connected publishing without pretending to judge artistic quality.
-- 🧠 **Continue Watching**: signed-in viewers resume from persisted playback progress.
-- 🔖 **Watch Later**: one-click private saving creates a personal library.
-- 📊 **Creator Studio**: views, likes, comments, published runtime, storage, per-video performance, series management, and tier evidence live together.
-- 🔔 **Activity inbox**: configurable notifications cover likes, comments, follows, and new series episodes.
-- 🚩 **Reporting intake**: signed-in viewers can report rights, impersonation, non-consensual, hate, spam, or other concerns once per video.
-- 🗜️ **Local storage optimizer**: optional, conservative WebM re-encoding runs in the browser and is kept only if it saves more than 8% while preserving runtime.
-- 👤 **Creator profiles**: cropped avatar/banner CRUD, bio/location/site fields, plus optional ChatGPT, Discord, X, GitHub, and YouTube links.
-- ⚙️ **Settings**: playback/performance, data saver, reduced motion, content preferences, notifications, public-profile privacy, and a JSON account export.
-- 🔎 **Queryable public web**: search APIs, canonical video/profile/series URLs, `VideoObject` structured data, XML sitemap, robots rules, manifest, and share metadata.
-- 🔐 **Guest-first access**: viewing requires no account. Sign in with ChatGPT appears only when someone tries to publish or interact.
+-  **Quicks**: videos strictly shorter than 60 seconds enter a vertical, paginated feed with keyboard and on-screen navigation.
+- ️ **Series and episodes**: creators organize videos by season and episode; viewers get ordered series pages and optional next-episode autoplay.
+-  **Story Tier**: a transparent structural grade rewards sustained, connected publishing without pretending to judge artistic quality.
+-  **Continue Watching**: signed-in viewers resume from persisted playback progress.
+-  **Watch Later**: one-click private saving creates a personal library.
+-  **Creator Studio**: views, likes, comments, published runtime, storage, per-video performance, series management, and tier evidence live together.
+-  **Activity inbox**: configurable notifications cover likes, comments, follows, and new series episodes.
+-  **Reporting intake**: signed-in viewers can report rights, impersonation, non-consensual, hate, spam, or other concerns once per video.
+- ️ **Local storage optimizer**: optional, conservative WebM re-encoding runs in the browser and is kept only if it saves more than 8% while preserving runtime.
+-  **Creator profiles**: cropped avatar/banner CRUD, bio/location/site fields, plus optional ChatGPT, Discord, X, GitHub, and YouTube links.
+- ️ **Settings**: playback/performance, data saver, reduced motion, content preferences, notifications, public-profile privacy, and a JSON account export.
+-  **Queryable public web**: search APIs, canonical video/profile/series URLs, `VideoObject` structured data, XML sitemap, robots rules, manifest, and share metadata.
+-  **Guest-first access**: viewing requires no account. Sign in with ChatGPT appears only when someone tries to publish or interact.
 
 ---
 
-## 🏅 Story Tier
+## Story Tier
 
-Story Tier measures sustained story structure—not identity, popularity, truth, or artistic quality.
+Story Tier measures sustained story structurenot identity, popularity, truth, or artistic quality.
 
 | Tier | Server-checkable requirements |
 | :--- | :--- |
@@ -97,7 +107,7 @@ A qualifying series contains a season with at least three consecutive episodes, 
 
 ---
 
-## ⚙️ System Architecture
+## ️ System Architecture
 
 The browser talks to one edge worker. Sites supplies identity, D1, and R2.
 
@@ -118,7 +128,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the detailed trust and da
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### Option A: Automated setup
 
@@ -149,7 +159,7 @@ npm run dev
 
 No `.env` is required. Local D1/R2 state lives under this repository's `.wrangler/` directory.
 
-🔍 **Verification command**
+ **Verification command**
 
 ```bash
 npm run verify
@@ -165,7 +175,7 @@ Live domain: **[pumblo-ai-video.oumaribrahim123.chatgpt.site](https://pumblo-ai-
 
 ---
 
-## 🖥️ How to Use
+## ️ How to Use
 
 1. Browse, search, hover-preview videos, or scroll Quicks without signing in.
 2. Choose a write action, continue with ChatGPT, and claim a creator handle.
@@ -185,7 +195,7 @@ The helper route returns `404` outside development.
 
 ---
 
-## 📊 Capacity & Hosting
+## Capacity & Hosting
 
 The launch envelope is explicit and test-enforced:
 
@@ -194,15 +204,15 @@ The launch envelope is explicit and test-enforced:
 = 8,600 MiB maximum modeled media payload
 ```
 
-Each creator has 12 active video slots, but the 80 MiB channel total—not `12 × 40 MiB`—is the controlling storage bound. A single published file is capped at 40 MiB. This lets creators publish multi-part stories while keeping the 100-creator video envelope at 8,000 MiB; profile media adds at most 600 MiB.
+Each creator has 12 active video slots, but the 80 MiB channel totalnot `12 × 40 MiB`is the controlling storage bound. A single published file is capped at 40 MiB. This lets creators publish multi-part stories while keeping the 100-creator video envelope at 8,000 MiB; profile media adds at most 600 MiB.
 
 For comparison, Cloudflare currently publishes 10 GB-month of Standard R2 storage, 1 million Class A operations, 10 million Class B operations, and free Internet egress in its monthly free tier. D1 Free currently publishes 5 GB storage, 5 million rows read/day, and 100,000 rows written/day; Workers Free publishes 100,000 requests/day. Those direct-product limits are useful capacity benchmarks, but they do not prove that Sites-managed bindings inherit identical terms. See [`docs/HOSTING-100-USERS.md`](docs/HOSTING-100-USERS.md) for dated official sources and caveats.
 
-There is no application-level signup cap. “100 creators” is a bounded storage design target—not a claim of 100 simultaneous uploads, guaranteed uptime, permanent zero pricing, or unlimited playback.
+There is no application-level signup cap. "100 creators" is a bounded storage design targetnot a claim of 100 simultaneous uploads, guaranteed uptime, permanent zero pricing, or unlimited playback.
 
 ---
 
-## 📋 Runtime Reference
+## Runtime Reference
 
 | Resource | Limit / behavior |
 | :--- | :--- |
@@ -222,9 +232,9 @@ Public routes: [`docs/api.md`](docs/api.md).
 
 ---
 
-## 🚪 Product Gates
+## Product Gates
 
-Every market-facing change must survive one blunt question: **“Bro, who's even gonna use this?”**
+Every market-facing change must survive one blunt question: **"Bro, who's even gonna use this?"**
 
 | Gate | Shipping test |
 | :--- | :--- |
@@ -247,7 +257,7 @@ trending points = 6 × likes + 4 × comments + 0.05 × min(views, 500)
 
 ---
 
-## 🔬 Scope & Limitations
+## Scope & Limitations
 
 - **No free-forever or uptime promise**: provider availability, quotas, indexing, and pricing remain outside the repository's control.
 - **No server transcoding pipeline**: optimization is an optional browser-side WebM re-encode; it takes roughly the video's runtime and may keep the original when the browser cannot produce a safely smaller file.
@@ -259,7 +269,7 @@ trending points = 6 × likes + 4 × comments + 0.05 × min(views, 500)
 
 ---
 
-## 📁 File Structure
+## File Structure
 
 ```text
 pumblo/
@@ -284,7 +294,7 @@ pumblo/
 
 ---
 
-## 🩹 Troubleshooting
+## Troubleshooting
 
 | Issue | Root cause | Resolution |
 | :--- | :--- | :--- |
@@ -299,22 +309,22 @@ pumblo/
 
 ---
 
-## 🧩 Contributing
+## Contributing
 
 Run `npm run verify` before opening a pull request. High-value next steps are a moderation-review console, appeals, block/mute controls, C2PA inspection with precise trust language, thumbnails, and deeper retention analytics.
 
 ---
 
-## 📄 License
+## License
 
 AGPL-3.0-only © 2026 [Oumar Ibrahim](https://github.com/IamOumarIbrahim)
 
-## 🙏 Powered By
+## Powered By
 
 [Next.js](https://nextjs.org/) · [Vinext](https://github.com/cloudflare/vinext) · [Drizzle ORM](https://orm.drizzle.team/) · [Cloudflare D1](https://developers.cloudflare.com/d1/) · [Cloudflare R2](https://developers.cloudflare.com/r2/)
 
 <div align="center">
 
-If AI video deserves an independent home after the render, a ⭐ helps its first creators find it.
+If AI video deserves an independent home after the render, a  helps its first creators find it.
 
 </div>
