@@ -3,12 +3,11 @@
   <p><strong>The creator-owned home for AI video after the render.</strong></p>
   <p>Watch, publish, organize, and discuss AI-made video across toolsnot inside one generator's gallery.</p>
 
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-yellow.svg?style=flat-square)](LICENSE)
-  [![CI](https://github.com/IamOumarIbrahim/pumblo/actions/workflows/ci.yml/badge.svg)](https://github.com/IamOumarIbrahim/pumblo/actions/workflows/ci.yml)
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9-3178C6.svg?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-yellow.svg?style=flat-square" alt="License: AGPL-3.0" /></a>
   <br />
-  [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg?style=flat-square&logo=next.js)](https://nextjs.org/)
-  [![Launch target](https://img.shields.io/badge/launch-100%20creators-C7FF2F.svg?style=flat-square)](#-capacity--hosting)
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black.svg?style=flat-square&logo=next.js" alt="Next.js" /></a>
+  <a href="#-capacity--hosting"><img src="https://img.shields.io/badge/launch-100%20creators-C7FF2F.svg?style=flat-square" alt="Launch target" /></a>
   <br />
   <strong><a href="https://pumblo-ai-video.oumaribrahim123.chatgpt.site">Open Pumblo</a></strong>
 </div>
